@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+/** 教学资源接口：负责上传、检索、预览、下载、收藏、纠错和重新提交审核。 */
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor

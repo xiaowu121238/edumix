@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
+/** AI 案例整合对话请求，包含本轮问题、历史消息和已选资源案例。 */
 public record AiChatRequest(
     @NotBlank(message = "请输入要与AI讨论的内容") @Size(max = 4000, message = "单次消息不能超过4000字") String message,
     List<Long> resourceIds,

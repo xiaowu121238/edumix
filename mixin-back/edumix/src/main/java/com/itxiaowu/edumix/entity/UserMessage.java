@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 站内通知实体，保存系统公告、审核结果、纠错进度等用户消息。 */
 @Data
 @TableName("user_message")
 public class UserMessage {

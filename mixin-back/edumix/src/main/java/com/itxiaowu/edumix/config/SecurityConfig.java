@@ -22,6 +22,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+/**
+ * Spring Security 配置。
+ *
+ * <p>声明公开接口、角色权限、JWT 过滤器、无状态会话、密码编码器和前后端跨域规则。
+ */
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor

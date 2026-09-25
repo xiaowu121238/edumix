@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** 系统公告服务：仅允许管理员创建公告，并向所有启用账号投递站内消息。 */
 @Service
 @RequiredArgsConstructor
 public class SystemNoticeService {

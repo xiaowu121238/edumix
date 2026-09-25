@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 资源分类实体，用于资源库筛选和同类内容推荐。 */
 @Data
 @TableName("resource_category")
 public class ResourceCategory {

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 教学资源实体，保存文件元数据、上传者、可见范围及审核状态。 */
 @Data
 @TableName("teaching_resource")
 public class TeachingResource {

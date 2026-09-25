@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/** 教师主页、会话列表和私信消息相关传输对象的集合。 */
 public final class ChatDtos {
   private ChatDtos() {}
 

@@ -4,6 +4,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/** 审核消息服务：将资源和案例的提交、通过、驳回结果通知对应用户。 */
 @Service
 @RequiredArgsConstructor
 public class AuditNotificationService {

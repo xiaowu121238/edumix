@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+/** 头像存储服务：校验图片格式与大小，并在本地存储目录中安全读写头像文件。 */
 @Service
 @RequiredArgsConstructor
 public class AvatarService {

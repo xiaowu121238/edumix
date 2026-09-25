@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+/** 个人资料接口：查询和修改个人信息、上传头像以及修改登录密码。 */
 @RestController
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor

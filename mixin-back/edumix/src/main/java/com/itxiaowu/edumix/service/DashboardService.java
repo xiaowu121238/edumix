@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+/** 教师工作台聚合服务：计算个人业务统计并生成近期操作入口。 */
 @Service
 @RequiredArgsConstructor
 public class DashboardService {

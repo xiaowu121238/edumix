@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 课程章节实体，用于组成课程下的有序章节结构。 */
 @Data
 @TableName("course_chapter")
 public class CourseChapter {

@@ -21,6 +21,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+/** 私信 WebSocket 配置：注册握手端点、消息代理前缀，并在握手时校验 JWT。 */
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor

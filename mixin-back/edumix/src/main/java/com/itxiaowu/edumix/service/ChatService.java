@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+/** 私信业务服务：校验收发双方、保存消息、统计未读数并维护会话已读状态。 */
 @Service
 @RequiredArgsConstructor
 public class ChatService {

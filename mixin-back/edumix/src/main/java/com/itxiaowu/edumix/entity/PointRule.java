@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 积分规则实体，配置注册、签到、发布案例等行为对应的积分值。 */
 @Data
 @TableName("point_rule")
 public class PointRule {

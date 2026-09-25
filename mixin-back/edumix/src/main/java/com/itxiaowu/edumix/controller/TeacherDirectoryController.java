@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 教师目录接口：提供教师检索、公开主页和发起私信所需的用户信息。 */
 @RestController
 @RequestMapping("/api/teachers")
 @RequiredArgsConstructor

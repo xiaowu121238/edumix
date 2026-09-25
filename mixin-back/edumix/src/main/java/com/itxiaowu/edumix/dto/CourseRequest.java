@@ -3,6 +3,7 @@ package com.itxiaowu.edumix.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/** 课程创建或修改请求，包含三个维度的教学目标。 */
 public record CourseRequest(
     @Size(max = 50, message = "课程编码不能超过50个字符") String courseCode,
     @NotBlank(message = "课程名称不能为空") @Size(max = 150, message = "课程名称不能超过150个字符") String courseName,

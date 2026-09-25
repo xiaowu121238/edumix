@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 课程实体，保存课程基础信息及知识、能力、素质三个维度的教学目标。 */
 @Data
 @TableName("course")
 public class Course {

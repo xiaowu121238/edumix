@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+/** 全局异常处理器：将参数校验、权限、业务及未知异常转换为统一接口响应。 */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(AiUnavailableException.class)

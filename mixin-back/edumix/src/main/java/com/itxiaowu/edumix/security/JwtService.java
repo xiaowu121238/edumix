@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/** JWT 服务：签发登录令牌、校验签名与有效期，并读取用户标识和角色声明。 */
 @Service
 public class JwtService {
   private final SecretKey key;

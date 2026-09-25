@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 教学案例实体，保存富文本帖子内容、课程归属、访问方式及审核状态。 */
 @Data
 @TableName("teaching_case")
 public class TeachingCase {

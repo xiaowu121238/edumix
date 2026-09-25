@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 
+/** 案例收藏数据访问接口，负责收藏关系查询、创建和删除。 */
 public interface CaseFavoriteMapper {
   @Insert("INSERT IGNORE INTO case_favorite(user_id, case_id) VALUES(#{userId}, #{caseId})")
   int add(Long userId, Long caseId);

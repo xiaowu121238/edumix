@@ -20,6 +20,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 课程体系业务服务。
+ *
+ * <p>维护“课程—章节—知识点”层级、知识/能力/素质教学目标，以及教师收藏资源与知识点的关联。
+ */
 @Service
 @RequiredArgsConstructor
 public class CourseService {

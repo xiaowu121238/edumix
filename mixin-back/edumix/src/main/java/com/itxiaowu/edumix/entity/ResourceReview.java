@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 资源审核记录实体，保留每轮审核结果、意见、负责人和审核时间。 */
 @Data
 @TableName("resource_review")
 public class ResourceReview {

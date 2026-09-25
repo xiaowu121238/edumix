@@ -14,6 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 积分业务服务。
+ *
+ * <p>负责注册奖励、每日签到、案例审核奖励、付费案例解锁、作者收益和管理员人工发放， 所有余额变化都会写入积分流水。
+ */
 @Service
 @RequiredArgsConstructor
 public class PointService {

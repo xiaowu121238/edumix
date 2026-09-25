@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 消息中心接口：统一提供系统通知、审核通知、私信入口和已读状态管理。 */
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor

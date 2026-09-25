@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 
+/** 资源收藏数据访问接口，负责收藏关系和个人收藏列表查询。 */
 public interface ResourceFavoriteMapper {
   @Insert(
       "INSERT IGNORE INTO resource_favorite(user_id, resource_id) VALUES(#{userId}, #{resourceId})")

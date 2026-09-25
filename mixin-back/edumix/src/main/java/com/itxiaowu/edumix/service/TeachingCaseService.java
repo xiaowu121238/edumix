@@ -14,6 +14,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 教学案例业务服务。
+ *
+ * <p>区分个人草稿与公共案例，负责富文本内容、资源引用、提交审核、公开查询、收藏和积分解锁。 只有审核通过的公共案例才能被其他用户查看。
+ */
 @Service
 @RequiredArgsConstructor
 public class TeachingCaseService {
@@ -198,8 +203,7 @@ public class TeachingCaseService {
     }
     String visibility =
         request.visibility() == null ? "PUBLIC" : request.visibility().toUpperCase();
-    if ("PRIVATE".equals(visibility))
-      visibility = "PUBLIC"; // private cases remain drafts until submitted
+    if ("PRIVATE".equals(visibility)) visibility = "PUBLIC"; // 个人案例在正式提交前始终保留为草稿，提交后才进入公共审核流程。
     if (!VISIBILITY.contains(visibility)) throw new IllegalArgumentException("可见范围不合法");
     String access = request.accessType() == null ? "FREE" : request.accessType().toUpperCase();
     if (!ACCESS.contains(access)) throw new IllegalArgumentException("访问类型不合法");

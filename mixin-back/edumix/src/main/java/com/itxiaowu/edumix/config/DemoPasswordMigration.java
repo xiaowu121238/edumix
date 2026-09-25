@@ -10,7 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/** Converts initial local-demo plaintext passwords to BCrypt on first startup. */
+/** 启动迁移：首次运行时将本地演示账号的明文密码转换为 BCrypt 密文。 */
 @Component
 @RequiredArgsConstructor
 public class DemoPasswordMigration implements ApplicationRunner {

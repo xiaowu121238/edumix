@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 资源纠错实体，记录问题描述、提交人、处理状态和处理意见。 */
 @Data
 @TableName("resource_correction")
 public class ResourceCorrection {

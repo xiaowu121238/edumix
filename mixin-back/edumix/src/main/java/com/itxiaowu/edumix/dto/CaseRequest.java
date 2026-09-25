@@ -3,6 +3,7 @@ package com.itxiaowu.edumix.dto;
 import jakarta.validation.constraints.*;
 import java.util.List;
 
+/** 教学案例创建或正式发布请求。 */
 public record CaseRequest(
     @NotBlank(message = "案例名称不能为空") @Size(max = 200, message = "案例名称不能超过200个字符") String caseName,
     @NotNull(message = "请选择所属课程") Long courseId,

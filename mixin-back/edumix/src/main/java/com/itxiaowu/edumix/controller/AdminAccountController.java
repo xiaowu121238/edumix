@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 管理员账号接口：创建负责人或管理员、调整角色、停用账号以及重置密码。 */
 @RestController
 @RequestMapping("/api/admin/accounts")
 @RequiredArgsConstructor

@@ -3,6 +3,7 @@ package com.itxiaowu.edumix.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/** 教学案例详情响应，包含作者、课程、标签、资源和当前用户访问状态。 */
 public record CaseResponse(
     Long id,
     String caseNo,

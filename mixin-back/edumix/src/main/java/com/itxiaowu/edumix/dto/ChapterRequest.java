@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/** 课程章节新增或修改请求。 */
 public record ChapterRequest(
     @NotBlank(message = "章节名称不能为空") @Size(max = 200, message = "章节名称不能超过200个字符") String chapterName,
     @Size(max = 30, message = "章节编号不能超过30个字符") String chapterNo,

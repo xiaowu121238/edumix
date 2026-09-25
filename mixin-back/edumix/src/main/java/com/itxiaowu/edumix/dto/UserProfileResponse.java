@@ -4,6 +4,7 @@ import com.itxiaowu.edumix.entity.PointAccount;
 import com.itxiaowu.edumix.entity.SysUser;
 import java.util.List;
 
+/** 用户个人主页响应，包含公开资料、角色、积分及上传内容统计。 */
 public record UserProfileResponse(
     Long id,
     String username,

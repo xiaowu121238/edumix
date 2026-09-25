@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 教学案例接口：管理本地草稿、发布审核、详情查看、收藏及积分解锁。 */
 @RestController
 @RequestMapping("/api/cases")
 @RequiredArgsConstructor

@@ -3,6 +3,7 @@ package com.itxiaowu.edumix.mapper;
 import java.util.List;
 import org.apache.ibatis.annotations.*;
 
+/** 案例关联数据访问接口，维护案例与知识点、资源之间的关系。 */
 public interface CaseRelationMapper {
   @Select("SELECT knowledge_point_id FROM case_knowledge_point WHERE case_id=#{caseId}")
   List<Long> pointIds(Long caseId);

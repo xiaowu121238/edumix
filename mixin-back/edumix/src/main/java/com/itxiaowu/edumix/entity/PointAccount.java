@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.Version;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 用户积分账户实体，保存当前可用积分余额。 */
 @Data
 @TableName("point_account")
 public class PointAccount {

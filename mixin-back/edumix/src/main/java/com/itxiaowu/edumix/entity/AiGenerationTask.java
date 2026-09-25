@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** AI 生成任务实体，记录调用场景、输入摘要、生成状态和结果。 */
 @Data
 @TableName("ai_generation_task")
 public class AiGenerationTask {

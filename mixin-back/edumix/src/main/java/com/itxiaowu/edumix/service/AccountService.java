@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** 账号业务服务：实现教师自助注册及管理员对高权限账号的生命周期管理。 */
 @Service
 @RequiredArgsConstructor
 public class AccountService {

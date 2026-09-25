@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** 教师工作台接口：汇总当前用户的资源、案例、课程和待办数据。 */
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor

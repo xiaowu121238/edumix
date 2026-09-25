@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** 用户资料服务：读取当前账号、更新个人资料、修改密码并组装角色与积分信息。 */
 @Service
 @RequiredArgsConstructor
 public class UserService {

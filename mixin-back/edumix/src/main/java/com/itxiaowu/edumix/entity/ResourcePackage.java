@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 资源包实体，用于把多个教学资源组织为可复用的备课集合。 */
 @Data
 @TableName("resource_package")
 public class ResourcePackage {

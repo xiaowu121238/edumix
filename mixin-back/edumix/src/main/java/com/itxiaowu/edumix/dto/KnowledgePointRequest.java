@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/** 知识点新增或修改请求，建议课时和排序必须为非负整数。 */
 public record KnowledgePointRequest(
     @NotBlank(message = "知识点名称不能为空") @Size(max = 200, message = "知识点名称不能超过200个字符") String pointName,
     @Size(max = 50, message = "知识点编码不能超过50个字符") String pointCode,

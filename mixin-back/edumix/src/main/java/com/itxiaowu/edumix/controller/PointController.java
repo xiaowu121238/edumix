@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 积分接口：处理余额查询、每日签到、积分流水、案例解锁和管理员发放。 */
 @RestController
 @RequestMapping("/api/points")
 @RequiredArgsConstructor

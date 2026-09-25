@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 资源包条目实体，记录资源在资源包中的顺序和使用说明。 */
 @Data
 @TableName("resource_package_item")
 public class ResourcePackageItem {

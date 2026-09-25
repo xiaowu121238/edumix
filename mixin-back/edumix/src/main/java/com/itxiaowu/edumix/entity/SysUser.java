@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 系统用户实体，保存登录账号、个人资料、启用状态及最近登录时间。 */
 @Data
 @TableName("sys_user")
 public class SysUser {

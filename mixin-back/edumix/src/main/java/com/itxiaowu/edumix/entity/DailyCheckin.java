@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 每日签到实体，通过用户与日期唯一约束避免重复领取积分。 */
 @Data
 @TableName("daily_checkin")
 public class DailyCheckin {

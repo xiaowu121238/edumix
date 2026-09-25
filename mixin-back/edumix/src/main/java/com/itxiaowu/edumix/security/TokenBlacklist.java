@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 
+/** 注销令牌黑名单：在令牌自然过期前阻止其再次访问受保护接口。 */
 @Component
 public class TokenBlacklist {
   private final Map<String, Instant> revokedTokens = new ConcurrentHashMap<>();

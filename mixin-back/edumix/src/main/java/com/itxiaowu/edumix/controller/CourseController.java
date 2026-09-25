@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 课程体系接口：维护课程、章节、知识点、教学目标及知识点资源关联。 */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor

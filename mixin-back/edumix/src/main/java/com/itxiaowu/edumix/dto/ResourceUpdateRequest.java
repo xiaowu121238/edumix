@@ -3,6 +3,7 @@ package com.itxiaowu.edumix.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/** 被驳回资源修改并重新提交审核时使用的元数据请求。 */
 public record ResourceUpdateRequest(
     @NotBlank(message = "资源名称不能为空") @Size(max = 200, message = "资源名称不能超过200个字符")
         String resourceName,

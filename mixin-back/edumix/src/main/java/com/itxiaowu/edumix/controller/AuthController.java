@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+/** 认证接口：处理教师注册、账号登录、JWT 注销及当前登录信息查询。 */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

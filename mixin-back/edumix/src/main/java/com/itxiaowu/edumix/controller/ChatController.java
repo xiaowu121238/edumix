@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** 用户私信接口：管理会话列表、历史消息、未读状态以及消息发送。 */
 @RestController
 @RequestMapping("/api/chats")
 @RequiredArgsConstructor

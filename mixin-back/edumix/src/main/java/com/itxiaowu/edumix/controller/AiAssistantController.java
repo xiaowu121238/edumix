@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/** AI 教学助手接口：提供公共资源推荐和基于已选资料的案例草稿整合对话。 */
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor

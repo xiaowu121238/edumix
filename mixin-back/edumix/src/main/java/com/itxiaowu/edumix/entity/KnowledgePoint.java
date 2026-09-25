@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 知识点实体，隶属于课程章节并记录编码、建议课时和排序。 */
 @Data
 @TableName("knowledge_point")
 public class KnowledgePoint {

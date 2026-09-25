@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 案例解锁实体，记录用户支付积分后获得的永久访问权限。 */
 @Data
 @TableName("case_unlock")
 public class CaseUnlock {

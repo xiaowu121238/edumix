@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** AI 推荐记录实体，保存推荐对象、推荐理由和用户反馈。 */
 @Data
 @TableName("ai_recommendation")
 public class AiRecommendation {

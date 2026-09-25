@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+/** 用户数据访问接口，并提供角色查询等账号关联操作。 */
 public interface SysUserMapper extends BaseMapper<SysUser> {
   @Select(
       """

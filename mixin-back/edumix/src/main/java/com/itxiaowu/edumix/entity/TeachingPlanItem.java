@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 授课方案条目实体，记录每个教学环节的内容、时长和排序。 */
 @Data
 @TableName("teaching_plan_item")
 public class TeachingPlanItem {

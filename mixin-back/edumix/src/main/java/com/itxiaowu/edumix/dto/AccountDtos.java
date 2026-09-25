@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
+/** 账号管理相关请求和响应对象的集合。 */
 public final class AccountDtos {
   private AccountDtos() {}
 

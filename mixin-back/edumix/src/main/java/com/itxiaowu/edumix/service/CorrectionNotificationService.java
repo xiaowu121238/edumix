@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+/** 资源纠错通知服务：同时通知资源上传者和负责人，并跟踪纠错处理结果。 */
 @Service
 @RequiredArgsConstructor
 public class CorrectionNotificationService {

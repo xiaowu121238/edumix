@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/** 负责人审核接口：查询待审资源与案例，并执行通过或驳回操作。 */
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor

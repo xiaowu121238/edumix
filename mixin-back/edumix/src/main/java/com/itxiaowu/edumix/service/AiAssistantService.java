@@ -18,6 +18,11 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * AI 教学助手服务。
+ *
+ * <p>推荐功能从审核通过的公共资源库和案例库取候选；整合功能只读取当前用户有权访问的选中资料， 并以多轮对话方式生成可继续编辑的案例草稿。
+ */
 @Service
 @RequiredArgsConstructor
 public class AiAssistantService {

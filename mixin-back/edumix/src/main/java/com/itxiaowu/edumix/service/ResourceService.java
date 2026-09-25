@@ -20,6 +20,11 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * 教学资源业务服务。
+ *
+ * <p>统一处理本地文件存储、元数据维护、公开审核、预览下载、收藏、纠错和驳回后重新提交。 未审核通过的公共资源不会出现在其他用户的资源库中。
+ */
 @Service
 @RequiredArgsConstructor
 public class ResourceService {
@@ -188,8 +193,7 @@ public class ResourceService {
       entity.setDescription(clean(request.description()));
       entity.setCategoryId(request.categoryId());
       entity.setVisibility(scope);
-      // A changed shared resource loses approval immediately; the old version is not public
-      // meanwhile.
+      // 公共资源一旦被修改就立即失去已通过状态，旧版本在重新审核期间也不再公开。
       entity.setAuditStatus(scope.equals("PRIVATE") ? "APPROVED" : "PENDING");
       if (newFile != null) {
         entity.setFileUrl(replacementUrl);

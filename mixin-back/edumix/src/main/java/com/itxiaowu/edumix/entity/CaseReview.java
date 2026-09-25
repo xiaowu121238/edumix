@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
+/** 案例审核记录实体，保留负责人每次通过或驳回的处理信息。 */
 @Data
 @TableName("case_review")
 public class CaseReview {
