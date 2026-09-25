@@ -1,0 +1,29 @@
+.case-paywall {
+  border: 1px solid #d8e5ff;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #f2f7ff, #fff);
+  padding: 40px 24px;
+  text-align: center;
+}
+.case-paywall h2 {
+  font-size: 22px;
+  margin: 0 0 10px;
+  color: #1b3155;
+}
+.case-paywall p {
+  color: #64748b;
+  line-height: 1.7;
+}
+.case-paywall button {
+  border: 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  padding: 12px 22px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.case-paywall button:hover {
+  background: #1d4ed8;
+}

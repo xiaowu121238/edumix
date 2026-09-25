@@ -1,0 +1,23 @@
+package com.itxiaowu.edumix.mapper;
+
+import com.itxiaowu.edumix.entity.ResourceFavorite;
+import java.util.List;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Select;
+
+public interface ResourceFavoriteMapper {
+  @Insert(
+      "INSERT IGNORE INTO resource_favorite(user_id, resource_id) VALUES(#{userId}, #{resourceId})")
+  int add(Long userId, Long resourceId);
+
+  @Delete("DELETE FROM resource_favorite WHERE user_id=#{userId} AND resource_id=#{resourceId}")
+  int remove(Long userId, Long resourceId);
+
+  @Select(
+      "SELECT COUNT(*) FROM resource_favorite WHERE user_id=#{userId} AND resource_id=#{resourceId}")
+  int exists(Long userId, Long resourceId);
+
+  @Select("SELECT user_id, resource_id, create_time FROM resource_favorite WHERE user_id=#{userId}")
+  List<ResourceFavorite> findByUser(Long userId);
+}

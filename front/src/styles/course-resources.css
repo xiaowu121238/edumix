@@ -1,0 +1,132 @@
+.course-resource-dialog {
+  width: min(760px, 96vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+.course-resource-dialog header small {
+  display: block;
+  color: var(--slate-500);
+  font-size: 11px;
+  margin-top: 5px;
+}
+.course-resource-body {
+  padding: 20px 24px;
+  overflow: auto;
+}
+.course-resource-body h3 {
+  font-size: 13px;
+  color: var(--slate-800);
+  margin: 4px 0 12px;
+}
+.course-resource-body h3:not(:first-child) {
+  margin-top: 24px;
+}
+.course-resource-empty {
+  padding: 18px;
+  color: var(--slate-500);
+  background: var(--slate-50);
+  border-radius: 9px;
+  font-size: 12px;
+}
+.course-resource-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border: 1px solid var(--slate-100);
+  border-radius: 9px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.course-resource-item span {
+  flex: 1;
+  min-width: 0;
+}
+.course-resource-item strong,
+.course-resource-item small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.course-resource-item small {
+  color: var(--slate-500);
+  font-size: 10px;
+  margin-top: 4px;
+}
+.course-resource-item button {
+  border: 0;
+  background: #eff6ff;
+  color: var(--primary);
+  border-radius: 7px;
+  padding: 6px 9px;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 6px;
+}
+.course-resource-item button.danger-action {
+  background: #fff1f2;
+  color: #e11d48;
+}
+.course-resource-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.course-resource-filters input,
+.course-resource-filters select {
+  border: 1px solid var(--slate-200);
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: #fff;
+  font-size: 12px;
+  min-width: 0;
+}
+.course-resource-filters input {
+  flex: 1;
+}
+
+/* The custom chevron replaces the browser's native select arrow. */
+.course-selector select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.course-selector > svg:last-child {
+  pointer-events: none;
+  flex: none;
+}
+.course-resource-candidates {
+  max-height: 230px;
+  overflow: auto;
+}
+.course-resource-candidates label {
+  cursor: pointer;
+  justify-content: flex-start;
+}
+.course-resource-candidates input {
+  accent-color: var(--primary);
+}
+.course-resource-dialog footer span {
+  margin-right: auto;
+  color: var(--slate-500);
+  font-size: 11px;
+}
+@media (max-width: 640px) {
+  .course-resource-filters {
+    flex-direction: column;
+  }
+  .course-resource-item {
+    align-items: flex-start;
+  }
+  .course-resource-item > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .course-resource-item button {
+    margin: 0;
+  }
+}

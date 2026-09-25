@@ -1,0 +1,92 @@
+.dashboard-page .stat-grid.five-stats {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.dashboard-stat-button {
+  border: 1px solid var(--slate-100);
+  text-align: left;
+  cursor: pointer;
+  background: #fff;
+  width: 100%;
+}
+.dashboard-stat-button .stat-arrow {
+  color: var(--slate-400);
+}
+.dashboard-welcome-art {
+  width: 130px;
+  height: 130px;
+  flex: 0 0 auto;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  color: #2563eb;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  position: relative;
+  z-index: 1;
+  transform: rotate(-8deg);
+}
+.dashboard-course-button {
+  width: 100%;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  color: var(--slate-500);
+}
+.dashboard-course-meta {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  color: var(--slate-500);
+}
+.dashboard-empty {
+  text-align: center;
+  padding: 32px 14px;
+  color: var(--slate-500);
+  font-size: 12px;
+}
+.dashboard-empty p {
+  margin-bottom: 14px;
+}
+.dashboard-loading {
+  padding: 32px;
+  text-align: center;
+  color: var(--slate-500);
+}
+.dashboard-review-card {
+  padding: 20px;
+}
+.dashboard-review-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--slate-800);
+}
+.dashboard-review-card p {
+  color: var(--slate-500);
+  font-size: 12px;
+  margin: 12px 0;
+}
+.dashboard-review-card .button {
+  width: 100%;
+  justify-content: center;
+}
+.dashboard-retry {
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 8px;
+}
+@media (max-width: 1200px) {
+  .dashboard-page .stat-grid.five-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .dashboard-welcome-art {
+    display: none;
+  }
+  .dashboard-page .stat-grid.five-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

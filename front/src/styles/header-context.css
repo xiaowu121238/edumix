@@ -1,0 +1,80 @@
+.app-header .header-left {
+  min-width: 0;
+  flex: 1;
+}
+.app-header .header-actions {
+  flex-shrink: 0;
+}
+.app-header .notification-count {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+}
+.header-context {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 3px;
+}
+.header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.header-breadcrumb a {
+  color: var(--slate-400);
+}
+.header-breadcrumb a:hover {
+  color: var(--primary);
+}
+.header-breadcrumb strong {
+  font-weight: 700;
+  color: var(--slate-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.header-breadcrumb-separator {
+  color: var(--slate-300);
+}
+.header-context small {
+  font-size: 11px;
+  color: var(--slate-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.header-avatar-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+@media (max-width: 760px) {
+  .header-context small {
+    display: none;
+  }
+  .header-breadcrumb {
+    font-size: 12px;
+    gap: 5px;
+  }
+  .header-breadcrumb a,
+  .header-breadcrumb-separator {
+    display: none;
+  }
+}

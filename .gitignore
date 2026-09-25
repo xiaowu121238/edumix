@@ -1,0 +1,23 @@
+# 本地 Git 历史备份，不参与新仓库提交。
+.git-backup-local/
+
+# 前端依赖与构建产物。
+**/node_modules/
+**/dist/
+
+# 后端构建、运行数据与 IDE 配置。
+**/target/
+**/uploads/
+**/.idea/
+**/.vscode/
+
+# 本地配置、日志和敏感变量。
+**/.env
+**/.env.*
+!**/.env.example
+**/application-local.yaml
+*.log
+
+# 操作系统临时文件。
+.DS_Store
+Thumbs.db

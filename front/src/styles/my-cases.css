@@ -1,0 +1,134 @@
+.my-cases-page {
+  max-width: 1240px;
+  margin: auto;
+}
+.my-case-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 26px 0 18px;
+}
+.my-case-tabs button {
+  border: 1px solid #dce5f2;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #55657c;
+  cursor: pointer;
+}
+.my-case-tabs button.active {
+  color: #245fe0;
+  background: #eef5ff;
+  border-color: #b9d2ff;
+}
+.my-case-tabs span {
+  margin-left: 6px;
+  color: #8290a5;
+}
+.my-case-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dce5f2;
+  border-radius: 12px;
+  background: white;
+  padding: 11px 14px;
+  max-width: 420px;
+  margin-bottom: 20px;
+  color: #8191a9;
+}
+.my-case-search input {
+  border: 0;
+  outline: 0;
+  width: 100%;
+  font: inherit;
+}
+.my-case-list {
+  display: grid;
+  gap: 14px;
+}
+.my-case-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  padding: 22px 25px;
+}
+.my-case-main {
+  min-width: 0;
+}
+.my-case-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8a98ac;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.my-case-badge {
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: #eef3fb;
+  color: #536781;
+}
+.my-case-badge.draft {
+  background: #edf3ff;
+  color: #3568bc;
+}
+.my-case-badge.pending {
+  background: #fff5df;
+  color: #a16b05;
+}
+.my-case-badge.rejected {
+  background: #fff0ee;
+  color: #ba5148;
+}
+.my-case-badge.published {
+  background: #e7f7ee;
+  color: #24845c;
+}
+.my-case-row h2 {
+  font-size: 19px;
+  margin: 12px 0 7px;
+  color: #17253d;
+}
+.my-case-row p {
+  color: #66758b;
+  margin: 0;
+  line-height: 1.6;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.my-case-row small {
+  display: block;
+  color: #a46c3d;
+  margin-top: 7px;
+}
+.my-case-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.my-case-delete {
+  border: 0;
+  background: transparent;
+  color: #9babbd;
+  cursor: pointer;
+  padding: 7px;
+}
+.my-case-delete:hover {
+  color: #d54d4d;
+}
+@media (max-width: 680px) {
+  .my-case-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .my-case-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

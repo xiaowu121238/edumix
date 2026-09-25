@@ -1,0 +1,152 @@
+.course-objectives {
+  margin: 14px 0 18px;
+  padding: 18px 20px 20px;
+}
+.course-objectives > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+.course-objectives > header span {
+  color: #2563eb;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.course-objectives > header h2 {
+  margin: 3px 0 0;
+  color: #1e293b;
+  font-size: 15px;
+}
+.course-objectives > header small {
+  color: #94a3b8;
+  font-size: 9px;
+}
+.course-objective-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+}
+.course-objective-grid article {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-height: 108px;
+  padding: 14px;
+  border: 1px solid #e5eaf2;
+  border-radius: 11px;
+  background: #fbfdff;
+}
+.course-objective-grid article > b {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  font-size: 9px;
+}
+.course-objective-grid h3 {
+  margin: 2px 0 7px;
+  color: #334155;
+  font-size: 11px;
+}
+.course-objective-grid p {
+  margin: 0;
+  color: #64748b;
+  font-size: 9px;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+.course-objective-grid .knowledge > b {
+  color: #2563eb;
+  background: #dbeafe;
+}
+.course-objective-grid .ability > b {
+  color: #7c3aed;
+  background: #ede9fe;
+}
+.course-objective-grid .quality > b {
+  color: #059669;
+  background: #d1fae5;
+}
+
+.course-form-modal {
+  width: min(820px, 95vw);
+  max-height: 90vh;
+  overflow: hidden;
+}
+.course-form-modal .modal-fields {
+  max-height: calc(90vh - 142px);
+  overflow-y: auto;
+}
+.course-objective-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 13px 0 5px;
+  border-top: 1px solid #e5e7eb;
+}
+.course-objective-heading strong {
+  color: #1e293b;
+  font-size: 13px;
+}
+.course-objective-heading span {
+  color: #94a3b8;
+  font-size: 9px;
+}
+.objective-field {
+  padding: 12px;
+  border: 1px solid #e5eaf2;
+  border-radius: 10px;
+  background: #fbfdff;
+}
+.objective-field > span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.objective-field > span b {
+  color: #334155;
+  font-size: 11px;
+}
+.objective-field > span small {
+  color: #94a3b8;
+  font-size: 8px;
+}
+.objective-field textarea {
+  min-height: 82px;
+  background: #fff;
+  line-height: 1.65;
+}
+.objective-field.knowledge {
+  border-left: 3px solid #60a5fa;
+}
+.objective-field.ability {
+  border-left: 3px solid #a78bfa;
+}
+.objective-field.quality {
+  border-left: 3px solid #34d399;
+}
+
+@media (max-width: 760px) {
+  .course-objectives > header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .course-objective-grid {
+    grid-template-columns: 1fr;
+  }
+  .course-objective-grid article {
+    min-height: auto;
+  }
+  .course-objective-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}

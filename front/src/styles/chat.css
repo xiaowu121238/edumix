@@ -1,0 +1,483 @@
+.teacher-page,
+.chat-page {
+  width: min(1400px, 100%);
+}
+.teacher-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  margin: 18px 0 26px;
+  background: linear-gradient(120deg, #fff, #f3f7ff);
+}
+.teacher-avatar {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #dbeafe;
+  color: #2563eb;
+}
+.teacher-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.teacher-avatar svg {
+  width: 36px;
+  height: 36px;
+}
+.teacher-hero > div {
+  flex: 1;
+}
+.teacher-hero small {
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 700;
+}
+.teacher-hero h1 {
+  margin: 5px 0;
+  color: #17233b;
+  font-size: 27px;
+}
+.teacher-hero p {
+  margin: 0;
+  color: #718096;
+  font-size: 13px;
+}
+.teacher-hero .button svg {
+  width: 17px;
+}
+.teacher-cases h2 {
+  font-size: 18px;
+  margin: 0 0 15px;
+}
+.teacher-cases h2 span {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.teacher-case {
+  padding: 22px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.teacher-case:hover {
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+}
+.teacher-case > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #2563eb;
+  font-size: 11px;
+}
+.teacher-case > div svg {
+  width: 16px;
+}
+.teacher-case h3 {
+  margin: 12px 0 6px;
+  color: #17233b;
+  font-size: 17px;
+}
+.teacher-case p {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.7;
+}
+.teacher-case small {
+  font-size: 10px;
+  color: #94a3b8;
+}
+.chat-connect {
+  font-size: 11px;
+  color: #d97706;
+}
+.chat-connect.online {
+  color: #059669;
+}
+.chat-layout {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  height: min(720px, calc(100vh - 200px));
+  min-height: 490px;
+  overflow: hidden;
+}
+.chat-contacts {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid #e8edf5;
+  background: #fff;
+}
+.chat-find {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  margin: 17px;
+  border: 1px solid #dbe3f0;
+  border-radius: 9px;
+  padding: 0 10px;
+  color: #94a3b8;
+}
+.chat-find svg {
+  width: 16px;
+}
+.chat-find input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 12px;
+}
+.chat-contacts h2 {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 18px;
+  margin: 6px 0 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+.chat-contacts h2 span {
+  color: #94a3b8;
+}
+.teacher-search-list {
+  padding: 0 10px 10px;
+  border-bottom: 1px solid #e8edf5;
+}
+.teacher-search-list > small {
+  display: block;
+  padding: 4px 8px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+.teacher-search-list button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px;
+  border-radius: 8px;
+  background: white;
+  text-align: left;
+  color: #334155;
+}
+.teacher-search-list button:hover {
+  background: #f1f5ff;
+}
+.teacher-search-list button > svg {
+  width: 17px;
+  color: #2563eb;
+}
+.teacher-search-list button > svg:last-child {
+  margin-left: auto;
+}
+.teacher-search-list button span {
+  font-size: 12px;
+}
+.teacher-search-list button span small {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+.chat-contact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 17px;
+  border-left: 3px solid transparent;
+  background: white;
+  text-align: left;
+}
+.chat-contact:hover,
+.chat-contact.active {
+  background: #f4f8ff;
+}
+.chat-contact.active {
+  border-left-color: #2563eb;
+}
+.mini-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  background: #dbeafe;
+  color: #2563eb;
+  font-size: 15px;
+  font-weight: 700;
+}
+.contact-copy {
+  flex: 1;
+  min-width: 0;
+}
+.contact-copy strong,
+.contact-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.contact-copy strong {
+  color: #1e293b;
+  font-size: 12px;
+}
+.contact-copy small {
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+.contact-meta {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 5px;
+}
+.contact-meta small {
+  color: #94a3b8;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.contact-meta b {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #2563eb;
+  color: white;
+  font-size: 9px;
+}
+.contact-empty {
+  padding: 20px;
+  color: #94a3b8;
+  font-size: 11px;
+  text-align: center;
+}
+.chat-room {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.chat-room > header {
+  height: 68px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 21px;
+  border-bottom: 1px solid #e8edf5;
+}
+.chat-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  text-align: left;
+}
+.chat-person strong,
+.chat-person small {
+  display: block;
+}
+.chat-person strong {
+  color: #1e293b;
+  font-size: 13px;
+}
+.chat-person small {
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+.chat-history {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  gap: 13px;
+  padding: 22px;
+  background: #f8faff;
+}
+.older-button {
+  align-self: center;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: white;
+  color: #2563eb;
+  font-size: 10px;
+}
+.chat-empty {
+  margin: auto;
+  color: #94a3b8;
+  font-size: 12px;
+}
+.chat-bubble {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  max-width: 75%;
+}
+.chat-bubble.mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.chat-bubble small {
+  margin: 0 4px 5px;
+  color: #94a3b8;
+  font-size: 9px;
+}
+.chat-bubble p {
+  margin: 0;
+  padding: 10px 13px;
+  border: 1px solid #e8edf5;
+  border-radius: 3px 13px 13px 13px;
+  background: white;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-bubble.mine p {
+  border-color: #2563eb;
+  border-radius: 13px 3px 13px 13px;
+  background: #2563eb;
+  color: white;
+}
+.chat-input {
+  flex: none;
+  padding: 14px 18px;
+  border-top: 1px solid #e8edf5;
+  background: white;
+}
+.chat-input textarea {
+  display: block;
+  width: 100%;
+  height: 68px;
+  resize: vertical;
+  padding: 10px;
+  border: 1px solid #dbe3f0;
+  border-radius: 9px;
+  outline: 0;
+  color: #334155;
+  font: inherit;
+  font-size: 12px;
+}
+.chat-input textarea:focus {
+  border-color: #60a5fa;
+}
+.chat-input footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 9px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+.chat-input .button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-input .button svg {
+  width: 15px;
+}
+.chat-input .button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.chat-no-room {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #94a3b8;
+}
+.chat-no-room > svg {
+  width: 42px;
+  height: 42px;
+  color: #93c5fd;
+}
+.chat-no-room h2 {
+  margin: 15px 0 6px;
+  color: #334155;
+  font-size: 16px;
+}
+.chat-no-room p {
+  font-size: 11px;
+}
+.article-author.teacher-link {
+  cursor: pointer;
+  background: transparent;
+  text-align: left;
+}
+.article-author.teacher-link:hover strong {
+  text-decoration: underline;
+  color: #2563eb;
+}
+@media (max-width: 800px) {
+  .chat-layout {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  .teacher-hero {
+    flex-wrap: wrap;
+  }
+  .teacher-hero .button {
+    margin-left: 100px;
+  }
+}
+@media (max-width: 620px) {
+  .chat-page {
+    padding: 18px 12px;
+  }
+  .chat-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 200px minmax(0, 1fr);
+    height: calc(100vh - 195px);
+    min-height: 560px;
+  }
+  .chat-contacts {
+    border-right: 0;
+    border-bottom: 1px solid #e8edf5;
+  }
+  .chat-contacts h2 {
+    margin-top: 0;
+  }
+  .chat-contact {
+    padding: 8px 13px;
+  }
+  .chat-room > header {
+    height: 55px;
+  }
+  .chat-history {
+    padding: 14px;
+  }
+  .chat-bubble {
+    max-width: 90%;
+  }
+  .teacher-hero {
+    padding: 20px;
+    gap: 14px;
+  }
+  .teacher-avatar {
+    width: 64px;
+    height: 64px;
+  }
+  .teacher-hero h1 {
+    font-size: 22px;
+  }
+  .teacher-hero .button {
+    margin-left: 0;
+  }
+}

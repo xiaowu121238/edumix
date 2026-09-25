@@ -1,0 +1,153 @@
+.header-checkin {
+  position: relative;
+}
+.header-checkin-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d7e5fa;
+  border-radius: 10px;
+  background: #f5f9ff;
+  color: #2563eb;
+  padding: 8px 11px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.header-checkin-trigger:hover {
+  background: #eaf2ff;
+}
+.checkin-popover {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: -60px;
+  width: 330px;
+  max-width: calc(100vw - 24px);
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #dfe8f6;
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(22, 40, 75, 0.16);
+  z-index: 50;
+}
+.checkin-popover > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.checkin-popover > header strong {
+  display: block;
+  color: #1d2d49;
+  font-size: 16px;
+}
+.checkin-popover > header small {
+  display: block;
+  color: #8997aa;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.checkin-balance {
+  color: #2563eb;
+  background: #eff5ff;
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.checkin-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 12px;
+  color: #263950;
+}
+.checkin-month button {
+  border: 0;
+  background: #f4f7fc;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #60738e;
+}
+.checkin-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  text-align: center;
+}
+.checkin-weekday {
+  color: #99a5b6;
+  font-size: 11px;
+  padding: 6px 0;
+}
+.checkin-day {
+  width: 34px;
+  height: 34px;
+  margin: auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 12px;
+  color: #43546e;
+}
+.checkin-day.today:not(.done) {
+  box-shadow: inset 0 0 0 1.5px #3575e8;
+  color: #2563eb;
+}
+.checkin-day.done {
+  background: #3478eb;
+  color: white;
+  font-weight: 700;
+}
+.checkin-action,
+.checkin-back {
+  width: 100%;
+  margin-top: 16px;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.checkin-action {
+  background: #2563eb;
+  color: white;
+}
+.checkin-action:disabled {
+  background: #e9eff8;
+  color: #8292a9;
+  cursor: default;
+}
+.checkin-back {
+  background: #f2f6fc;
+  color: #2563eb;
+}
+.checkin-hint,
+.checkin-error {
+  font-size: 11px;
+  margin: 8px 0 0;
+}
+.checkin-hint {
+  color: #8997aa;
+}
+.checkin-error {
+  color: #d65050;
+}
+@media (max-width: 760px) {
+  .header-checkin-trigger {
+    padding: 8px;
+  }
+  .header-checkin-trigger span {
+    display: none;
+  }
+  .checkin-popover {
+    right: -65px;
+  }
+}

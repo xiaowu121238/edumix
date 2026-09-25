@@ -1,0 +1,40 @@
+.admin-point-form {
+  max-width: 620px;
+  padding: 28px;
+  display: grid;
+  gap: 18px;
+}
+.admin-point-form h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 19px;
+  margin: 0;
+}
+.admin-point-form label {
+  display: grid;
+  gap: 8px;
+  color: #40516b;
+}
+.admin-point-form input,
+.admin-point-form select,
+.admin-point-form textarea {
+  width: 100%;
+  border: 1px solid #d8e2f1;
+  border-radius: 9px;
+  padding: 11px 12px;
+  font: inherit;
+  background: #fff;
+}
+.admin-point-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.admin-point-form p {
+  color: #718099;
+  font-size: 12px;
+  margin: 0;
+}
+.admin-point-form button {
+  justify-self: start;
+}

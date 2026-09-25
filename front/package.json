@@ -1,0 +1,25 @@
+{
+  "name": "edumix-front",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{vue,js,css}\" \"*.{js,json,html,md}\"",
+    "format:check": "prettier --check \"src/**/*.{vue,js,css}\" \"*.{js,json,html,md}\""
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.3.0",
+    "axios": "^1.7.9",
+    "lucide-vue-next": "^0.468.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "prettier": "^3.6.2",
+    "vite": "^6.0.5"
+  }
+}
