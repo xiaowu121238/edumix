@@ -12,4 +12,3 @@
 3. 在 `mixin-back/edumix` 执行 `mvn spring-boot:run`。
 4. 在 `front` 执行 `npm install` 和 `npm run dev`。
 
-真实密码、API Key、上传文件、构建产物和 IDE 私有配置均不应提交到 Git。
