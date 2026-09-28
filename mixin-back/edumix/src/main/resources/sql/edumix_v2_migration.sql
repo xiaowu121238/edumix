@@ -325,7 +325,7 @@ UPDATE teaching_case SET
   teaching_objective = COALESCE(teaching_objective, summary),
   teaching_process = COALESCE(teaching_process, content),
   access_type = CASE WHEN id = 4 THEN 'POINTS' ELSE 'FREE' END,
-  points_price = CASE WHEN id = 4 THEN 20 ELSE 0 END;
+  points_price = CASE WHEN id = 4 THEN 3 ELSE 0 END;
 
 INSERT IGNORE INTO case_resource (case_id, resource_id, sort_order, use_description) VALUES
   (3,4,1,'课堂分组练习材料'),(4,5,1,'并发实验配套指导');

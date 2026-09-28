@@ -202,6 +202,41 @@ class ReviewWorkflowTests {
             id));
   }
 
+  @Test
+  void excellentCasesRankFirstWithinCourseSearchResults() {
+    UserPrincipal author = user("TEACHER"), viewer = user("TEACHER");
+    Long courseId = jdbc.queryForObject("SELECT id FROM course ORDER BY id LIMIT 1", Long.class);
+    String keyword = "排序测试" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    String normalNumber =
+        "CASE-RANK-N-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+    String excellentNumber =
+        "CASE-RANK-E-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+    jdbc.update(
+        """
+            INSERT INTO teaching_case(case_no,case_name,course_id,creator_id,visibility,access_type,audit_status,excellent,update_time)
+            VALUES(?,?,?,?,'PUBLIC','FREE','APPROVED',0,NOW())
+            """,
+        normalNumber,
+        keyword + "普通案例",
+        courseId,
+        author.getUserId());
+    jdbc.update(
+        """
+            INSERT INTO teaching_case(case_no,case_name,course_id,creator_id,visibility,access_type,audit_status,excellent,update_time)
+            VALUES(?,?,?,?,'PUBLIC','FREE','APPROVED',1,DATE_SUB(NOW(), INTERVAL 1 DAY))
+            """,
+        excellentNumber,
+        keyword + "优秀案例",
+        courseId,
+        author.getUserId());
+
+    var results = cases.published(keyword, courseId, viewer);
+
+    assertEquals(2, results.size());
+    assertEquals(1, results.get(0).excellent());
+    assertTrue(results.get(0).caseName().endsWith("优秀案例"));
+  }
+
   private UserPrincipal user(String... roles) {
     String username =
         "audit_test_" + UUID.randomUUID().toString().replace("-", "").substring(0, 18);
