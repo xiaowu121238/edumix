@@ -1,5 +1,6 @@
 package com.itxiaowu.edumix.service;
 
+import com.itxiaowu.edumix.common.PageResponse;
 import com.itxiaowu.edumix.dto.*;
 import com.itxiaowu.edumix.entity.ResourceCategory;
 import com.itxiaowu.edumix.security.UserPrincipal;
@@ -14,7 +15,25 @@ public interface ResourceService {
   List<ResourceResponse> list(
       String keyword, String type, Long categoryId, Boolean favoriteOnly, UserPrincipal user);
 
+  PageResponse<ResourceResponse> page(
+      String keyword,
+      String type,
+      Long categoryId,
+      Boolean favoriteOnly,
+      long page,
+      long size,
+      UserPrincipal user);
+
   List<ResourceResponse> mine(UserPrincipal user);
+
+  PageResponse<ResourceResponse> minePage(
+      String keyword,
+      String type,
+      Long categoryId,
+      Boolean favoriteOnly,
+      long page,
+      long size,
+      UserPrincipal user);
 
   ResourceResponse upload(
       MultipartFile file,

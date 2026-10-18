@@ -1,6 +1,7 @@
 package com.itxiaowu.edumix.controller;
 
 import com.itxiaowu.edumix.common.ApiResponse;
+import com.itxiaowu.edumix.common.PageResponse;
 import com.itxiaowu.edumix.dto.*;
 import com.itxiaowu.edumix.security.UserPrincipal;
 import com.itxiaowu.edumix.service.TeachingCaseService;
@@ -19,21 +20,26 @@ public class TeachingCaseController {
   private final TeachingCaseService service;
 
   @GetMapping
-  public ApiResponse<List<CaseResponse>> list(
+  public ApiResponse<PageResponse<CaseResponse>> list(
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) Long courseId,
       @RequestParam(required = false) String status,
       @RequestParam(required = false, defaultValue = "false") Boolean favoriteOnly,
+      @RequestParam(defaultValue = "1") long page,
+      @RequestParam(defaultValue = "12") long size,
       @AuthenticationPrincipal UserPrincipal user) {
-    return ApiResponse.success(service.list(keyword, courseId, status, favoriteOnly, user));
+    return ApiResponse.success(
+        service.page(keyword, courseId, status, favoriteOnly, page, size, user));
   }
 
   @GetMapping("/published")
-  public ApiResponse<List<CaseResponse>> published(
+  public ApiResponse<PageResponse<CaseResponse>> published(
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) Long courseId,
+      @RequestParam(defaultValue = "1") long page,
+      @RequestParam(defaultValue = "10") long size,
       @AuthenticationPrincipal UserPrincipal user) {
-    return ApiResponse.success(service.published(keyword, courseId, user));
+    return ApiResponse.success(service.publishedPage(keyword, courseId, page, size, user));
   }
 
   @GetMapping("/mine")

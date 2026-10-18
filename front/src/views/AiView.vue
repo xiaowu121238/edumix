@@ -161,10 +161,10 @@ function changeContextTab(value) {
 }
 async function refreshMaterials() {
   const [resourceResult, caseResult, publicResourceResult, publicCaseResult] = await Promise.all([
-    getResources({ favoriteOnly: true }),
-    getCases({ favoriteOnly: true }),
-    getResources({}),
-    getPublishedCases({}),
+    getResources({ favoriteOnly: true, size: 100 }),
+    getCases({ favoriteOnly: true, size: 100 }),
+    getResources({ size: 100 }),
+    getPublishedCases({ size: 100 }),
   ])
   resources.value = resourceResult.data || []
   cases.value = (caseResult.data || []).filter((item) => item.contentUnlocked !== false)

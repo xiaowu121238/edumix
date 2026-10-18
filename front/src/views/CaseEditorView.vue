@@ -155,7 +155,7 @@ async function persist(submitAfter = false, automatic = false) {
 onMounted(async () => {
   try {
     courses.value = (await getCourses()).data || []
-    resources.value = (await getResources({})).data || []
+    resources.value = (await getResources({ size: 100 })).data || []
     if (editing.value) {
       const item = (await getCase(route.params.id)).data
       if (

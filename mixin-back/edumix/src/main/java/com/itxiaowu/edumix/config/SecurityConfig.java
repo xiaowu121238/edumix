@@ -45,6 +45,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/auth/login", "/api/auth/register", "/error")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/public/**")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/profile/avatars/*")
                     .permitAll()
                     .requestMatchers("/ws/chat", "/ws/chat/**")

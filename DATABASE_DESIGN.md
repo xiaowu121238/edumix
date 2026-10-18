@@ -1,64 +1,65 @@
-# EduMix 数据库设计审查（V2）
+# EduMix 数据库设计说明
 
-本设计以开题报告确定的业务范围为基准：教师、资源负责人、管理员三类角色；课程—章节—知识点组织体系；资源库与案例库；资源审核；资源包；授课方案；积分激励；AI 辅助推荐。
+## 1. 当前业务范围
 
-## 审查结论
+数据库只围绕项目已经实现的功能设计。当前核心业务包括：
 
-V1 的 18 张表能够支持用户、课程、资源、案例、资源包、授课方案和消息等基础流程，但存在以下缺口：
+- 教师、资源负责人、管理员账号与角色权限；
+- 课程—章节—知识点三级课程体系；
+- 教学资源上传、审核、预览、收藏与纠错；
+- 教学案例草稿、富文本编辑、审核、积分解锁与收藏；
+- 积分账户、签到、奖励、消费与管理员发放；
+- 系统通知、审核通知和用户私信；
+- AI 公共内容推荐与基于收藏内容的案例整合。
 
-- 缺少资源分类以及资源、案例的审核历史。
-- 案例缺少课程、教学目标、实施过程、反思、访问方式与积分价格。
-- 通用 `resource_package_item` 使用类型字段关联不同主表，无法建立内容外键。
-- 授课方案只能关联一个资源包，不符合“一个方案可关联多个资源包”。
-- 缺少签到、积分账户、积分流水和案例解锁记录。
-- AI 任务没有明确的资源包/授课方案分析对象，也没有逐项推荐与教师确认记录。
-- 开题报告中的收藏、有效纠错功能没有数据支撑。
+## 2. 核心数据模块
 
-V2 采用增量迁移补齐上述缺口，保留 V1 数据。
-
-## 分层表结构
-
-### 基础与权限
+### 用户与权限
 
 `sys_user`、`sys_role`、`sys_user_role`
+
+用户与角色采用多对多关系。普通注册账号自动获得教师角色；资源负责人同时拥有教师和资源负责人角色。
 
 ### 课程体系
 
 `course`、`course_teacher`、`course_chapter`、`knowledge_point`
 
-### 资源与案例
+课程包含知识、能力、素质三个维度的教学目标。章节和知识点均采用逻辑删除，资源与案例通过知识点建立教学语义关联。
 
-`resource_category`、`teaching_resource`、`resource_knowledge_point`、`resource_review`、`teaching_case`、`case_knowledge_point`、`case_resource`、`case_review`、`resource_favorite`、`case_favorite`、`resource_correction`
+### 教学资源库
 
-### 辅助备课
+`resource_category`、`teaching_resource`、`resource_knowledge_point`、`resource_review`、`resource_favorite`、`resource_correction`
 
-`resource_package`、`package_resource`、`package_case`、`teaching_plan`、`plan_package`、`teaching_plan_item`
+文件本体保存在服务器上传目录，数据库只保存文件元数据和相对访问地址。公开资源必须满足 `visibility=PUBLIC`、`audit_status=APPROVED`、`deleted=0`。
 
-### 积分激励
+### 教学案例库
 
-`point_account`、`point_rule`、`daily_checkin`、`point_log`、`case_unlock`
+`teaching_case`、`case_knowledge_point`、`case_resource`、`case_review`、`case_favorite`、`case_unlock`
 
-### AI 与消息
+案例正文采用经过清洗的富文本 HTML，可嵌入已关联的图片、视频和其他教学资源。草稿仅作者可见；提交并审核通过后才进入公共案例库。积分案例价格限制为 1～3 分。
 
-`ai_generation_task`、`ai_recommendation`、`message`、`user_message`
+### 积分与签到
 
-## 关键设计决定
+`point_account`、`point_rule`、`point_log`、`point_grant`、`daily_checkin`
 
-1. 资源包中的资源和案例分别使用 `package_resource`、`package_case`，保证真实外键约束。
-2. 授课方案通过 `plan_package` 关联多个资源包。
-3. `point_log(user_id,business_type,business_id)` 唯一，保证奖励和扣分接口幂等。
-4. `daily_checkin(user_id,checkin_date)` 唯一，避免重复签到。
-5. `case_unlock(user_id,case_id)` 唯一，避免重复扣除解锁积分。
-6. 积分余额使用 `point_account.version` 实现乐观锁，扣分、作者分成和流水必须放在同一事务。
-7. AI 任务的 `package_id` 与 `plan_id` 必须且只能存在一个。
-8. AI 推荐的 `resource_id` 与 `case_id` 必须且只能存在一个；`selected` 记录教师是否确认，AI 不直接修改资源包或方案。
-9. 审核状态字段保存当前状态，`resource_review`、`case_review` 保存完整审核历史。
-10. V1 的 `resource_package_item` 和 `teaching_plan.package_id` 暂留兼容，新代码不再写入。
+所有积分变化必须写入流水。案例解锁时在同一事务中完成购买者扣分、作者收入和解锁记录写入。
 
-## 事务边界
+### 消息与私信
 
-- 案例审核通过：更新案例状态、写审核记录、发放作者积分、写积分流水、发送消息。
-- 案例解锁：校验余额、扣除积分、写解锁记录和流水、发放作者分成。
-- AI 推荐确认：更新推荐项 `selected`，再将所选资源/案例写入目标资源包或方案。
+`message`、`user_message`、`chat_conversation`、`chat_message`、`chat_read_cursor`
 
-以上流程应在 Spring `@Transactional` 方法中完成。
+平台消息用于系统公告和审核结果；私信使用独立会话及已读游标，避免与系统通知混用。
+
+### AI 记录
+
+`ai_generation_task`、`ai_recommendation`
+
+AI 业务面向资源推荐和案例草稿整合。候选内容只允许来自公开且审核通过的资源、案例，或当前用户已经收藏并有权访问的内容。
+
+## 3. 关键约束
+
+1. 公共查询必须同时检查公开范围、审核状态和逻辑删除状态。
+2. 待审核、驳回、私有资源以及个人案例草稿不得出现在公共接口中。
+3. 积分案例未解锁前不返回正文，也不能加入收藏。
+4. 审核记录、积分流水和解锁记录保留历史，不以当前主表状态代替过程数据。
+5. 文件真实存储路径、密码、JWT 密钥和 AI API Key 不写入公共响应或版本库。

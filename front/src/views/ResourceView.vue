@@ -29,6 +29,7 @@ import {
   uploadResource,
 } from '../api/resource'
 import { useRoute, useRouter } from 'vue-router'
+import PaginationBar from '../components/PaginationBar.vue'
 import '../styles/resource-resubmit.css'
 
 const route = useRoute(),
@@ -45,6 +46,7 @@ const error = ref(''),
   current = ref(null),
   previewUrl = ref('')
 const reviewHistory = ref([])
+const pagination = reactive({ page: 1, size: 12, total: 0, pages: 0 })
 const filters = reactive({
   keyword: '',
   type: '',
@@ -81,26 +83,21 @@ async function load() {
   loading.value = true
   clearMessage()
   try {
-    if (filters.mineOnly) {
-      const own = (await getMyResources()).data || []
-      const keyword = filters.keyword.trim().toLowerCase()
-      resources.value = own.filter(
-        (item) =>
-          (!keyword || `${item.resourceName} ${item.description || ''}`.toLowerCase().includes(keyword)) &&
-          (!filters.type || item.resourceType === filters.type) &&
-          (!filters.categoryId || item.categoryId === Number(filters.categoryId)) &&
-          (!filters.favoriteOnly || item.favorite),
-      )
-    } else
-      resources.value =
-        (
-          await getResources({
-            keyword: filters.keyword,
-            type: filters.type,
-            categoryId: filters.categoryId || undefined,
-            favoriteOnly: filters.favoriteOnly,
-          })
-        ).data || []
+    const params = {
+      keyword: filters.keyword || undefined,
+      type: filters.type || undefined,
+      categoryId: filters.categoryId || undefined,
+      favoriteOnly: filters.favoriteOnly,
+      page: pagination.page,
+      size: pagination.size,
+    }
+    const result = filters.mineOnly ? await getMyResources(params) : await getResources(params)
+    resources.value = result.data || []
+    Object.assign(pagination, {
+      page: Number(result.page?.page || pagination.page),
+      total: Number(result.page?.total || 0),
+      pages: Number(result.page?.pages || 0),
+    })
   } catch (e) {
     showError(e)
   } finally {
@@ -112,6 +109,15 @@ async function load() {
       .getElementById(`resource-${route.query.id}`)
       ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }
+}
+function search() {
+  pagination.page = 1
+  load()
+}
+function changePage(page) {
+  pagination.page = page
+  load()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 function resetForm() {
   Object.assign(form, {
@@ -273,20 +279,20 @@ onBeforeUnmount(() => {
         ><Search /><input
           v-model="filters.keyword"
           placeholder="搜索资源名称或简介"
-          @keyup.enter="load" /></label
-      ><select v-model="filters.type" @change="load">
+          @keyup.enter="search" /></label
+      ><select v-model="filters.type" @change="search">
         <option value="">全部类型</option>
         <option v-for="(name, key) in typeNames" :key="key" :value="key">{{ name }}</option></select
-      ><select v-model="filters.categoryId" @change="load">
+      ><select v-model="filters.categoryId" @change="search">
         <option value="">全部分类</option>
         <option v-for="item in categories" :key="item.id" :value="item.id">
           {{ item.categoryName }}
         </option></select
       ><label class="favorite-filter"
-        ><input v-model="filters.favoriteOnly" type="checkbox" @change="load" />只看收藏</label
+        ><input v-model="filters.favoriteOnly" type="checkbox" @change="search" />只看收藏</label
       ><label class="favorite-filter"
-        ><input v-model="filters.mineOnly" type="checkbox" @change="load" />只看我的</label
-      ><button class="button secondary" @click="load">检索</button>
+        ><input v-model="filters.mineOnly" type="checkbox" @change="search" />只看我的</label
+      ><button class="button secondary" @click="search">检索</button>
     </section>
     <p v-if="error" class="form-error">{{ error }}</p>
     <p v-if="notice" class="form-success">{{ notice }}</p>
@@ -364,6 +370,12 @@ onBeforeUnmount(() => {
         </button>
       </article>
     </section>
+    <PaginationBar
+      :page="pagination.page"
+      :pages="pagination.pages"
+      :total="pagination.total"
+      @change="changePage"
+    />
 
     <div
       v-if="modal"

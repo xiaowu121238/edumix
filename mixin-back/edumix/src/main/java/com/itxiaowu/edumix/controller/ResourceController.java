@@ -1,6 +1,7 @@
 package com.itxiaowu.edumix.controller;
 
 import com.itxiaowu.edumix.common.ApiResponse;
+import com.itxiaowu.edumix.common.PageResponse;
 import com.itxiaowu.edumix.dto.*;
 import com.itxiaowu.edumix.entity.ResourceCategory;
 import com.itxiaowu.edumix.security.UserPrincipal;
@@ -23,18 +24,29 @@ public class ResourceController {
   private final ResourceService resourceService;
 
   @GetMapping
-  public ApiResponse<List<ResourceResponse>> list(
+  public ApiResponse<PageResponse<ResourceResponse>> list(
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String type,
       @RequestParam(required = false) Long categoryId,
       @RequestParam(required = false, defaultValue = "false") Boolean favoriteOnly,
+      @RequestParam(defaultValue = "1") long page,
+      @RequestParam(defaultValue = "12") long size,
       @AuthenticationPrincipal UserPrincipal user) {
-    return ApiResponse.success(resourceService.list(keyword, type, categoryId, favoriteOnly, user));
+    return ApiResponse.success(
+        resourceService.page(keyword, type, categoryId, favoriteOnly, page, size, user));
   }
 
   @GetMapping("/mine")
-  public ApiResponse<List<ResourceResponse>> mine(@AuthenticationPrincipal UserPrincipal user) {
-    return ApiResponse.success(resourceService.mine(user));
+  public ApiResponse<PageResponse<ResourceResponse>> mine(
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String type,
+      @RequestParam(required = false) Long categoryId,
+      @RequestParam(required = false, defaultValue = "false") Boolean favoriteOnly,
+      @RequestParam(defaultValue = "1") long page,
+      @RequestParam(defaultValue = "12") long size,
+      @AuthenticationPrincipal UserPrincipal user) {
+    return ApiResponse.success(
+        resourceService.minePage(keyword, type, categoryId, favoriteOnly, page, size, user));
   }
 
   @GetMapping("/categories")

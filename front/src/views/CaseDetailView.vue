@@ -68,10 +68,10 @@ async function load() {
   cleanup()
   try {
     item.value = (await getCase(route.params.id)).data
-    const all = (await getResources({})).data || []
+    const all = (await getResources({ size: 100 })).data || []
     resourceMap.value = new Map(all.map((r) => [r.id, r]))
     recommendations.value = item.value.courseId
-      ? ((await getPublishedCases({ courseId: item.value.courseId })).data || [])
+      ? ((await getPublishedCases({ courseId: item.value.courseId, size: 100 })).data || [])
           .filter((c) => c.id !== item.value.id)
           .slice(0, 6)
       : []

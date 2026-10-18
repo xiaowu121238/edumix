@@ -13,8 +13,6 @@ public class AiGenerationTask {
   private String taskNo;
   private Long userId;
   private Long courseId;
-  private Long packageId;
-  private Long planId;
   private String taskType;
   private String requirementText;
   private String inputJson;

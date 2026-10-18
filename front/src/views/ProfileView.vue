@@ -44,7 +44,7 @@ function openCase(item) {
 async function load() {
   loading.value = true
   error.value = ''
-  const results = await Promise.allSettled([getCurrentUser(), getMyResources(), getMyCases()])
+  const results = await Promise.allSettled([getCurrentUser(), getMyResources({ size: 100 }), getMyCases()])
   if (results[0].status === 'fulfilled') {
     profile.value = results[0].value.data
     localStorage.setItem('edumix-user', JSON.stringify(profile.value))

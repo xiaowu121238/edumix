@@ -69,7 +69,10 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const [r, c] = await Promise.all([getResources({ favoriteOnly: true }), getCases({ favoriteOnly: true })])
+    const [r, c] = await Promise.all([
+      getResources({ favoriteOnly: true, size: 100 }),
+      getCases({ favoriteOnly: true, size: 100 }),
+    ])
     resources.value = r.data || []
     cases.value = c.data || []
   } catch (e) {

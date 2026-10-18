@@ -1,8 +1,9 @@
 import http from './http'
+import { unwrapPage } from './pagination'
 
 // 案例先保存为本地草稿，再显式提交审核；公开状态由后端审核结果决定。
-export const getCases = (params) => http.get('/cases', { params })
-export const getPublishedCases = (params) => http.get('/cases/published', { params })
+export const getCases = async (params) => unwrapPage(await http.get('/cases', { params }))
+export const getPublishedCases = async (params) => unwrapPage(await http.get('/cases/published', { params }))
 export const getMyCases = () => http.get('/cases/mine')
 export const createCaseDraft = (data) => http.post('/cases/drafts', data)
 export const updateCaseDraft = (id, data) => http.put(`/cases/${id}/draft`, data)

@@ -230,11 +230,32 @@ class ReviewWorkflowTests {
         courseId,
         author.getUserId());
 
-    var results = cases.published(keyword, courseId, viewer);
+    var page = cases.publishedPage(keyword, courseId, 1, 10, viewer);
+    var results = page.records();
 
+    assertEquals(2, page.total());
     assertEquals(2, results.size());
     assertEquals(1, results.get(0).excellent());
     assertTrue(results.get(0).caseName().endsWith("优秀案例"));
+  }
+
+  @Test
+  void pagedResourceSearchKeepsNameAndDescriptionMatchingAndHidesUnapprovedContent() {
+    UserPrincipal author = user("TEACHER"), viewer = user("TEACHER");
+    String keyword = "资源检索" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    insertSearchResource(author.getUserId(), keyword + "名称命中", "普通简介", "APPROVED");
+    insertSearchResource(author.getUserId(), "普通资源名称", keyword + "简介命中", "APPROVED");
+    insertSearchResource(author.getUserId(), keyword + "待审核", keyword, "PENDING");
+
+    var page = resources.page(keyword, null, null, false, 1, 10, viewer);
+
+    assertEquals(2, page.total());
+    assertEquals(2, page.records().size());
+    assertTrue(
+        page.records().stream()
+            .allMatch(
+                item ->
+                    "APPROVED".equals(item.auditStatus()) && "PUBLIC".equals(item.visibility())));
   }
 
   private UserPrincipal user(String... roles) {
@@ -270,6 +291,21 @@ class ReviewWorkflowTests {
         authorId);
     return jdbc.queryForObject(
         "SELECT id FROM teaching_resource WHERE resource_no=?", Long.class, number);
+  }
+
+  private void insertSearchResource(
+      Long authorId, String resourceName, String description, String auditStatus) {
+    String number = "RES-SEARCH-" + UUID.randomUUID().toString().replace("-", "").substring(0, 18);
+    jdbc.update(
+        """
+            INSERT INTO teaching_resource(resource_no,resource_name,resource_type,description,file_url,file_size,uploader_id,visibility,audit_status)
+            VALUES(?,?,'PDF',?,'test-only.pdf',1,?,'PUBLIC',?)
+            """,
+        number,
+        resourceName,
+        description,
+        authorId,
+        auditStatus);
   }
 
   private Long teachingCase(Long authorId) {

@@ -1,5 +1,6 @@
 package com.itxiaowu.edumix.service;
 
+import com.itxiaowu.edumix.common.PageResponse;
 import com.itxiaowu.edumix.dto.*;
 import com.itxiaowu.edumix.security.UserPrincipal;
 import java.util.List;
@@ -9,7 +10,19 @@ public interface TeachingCaseService {
   List<CaseResponse> list(
       String keyword, Long courseId, String status, Boolean favoriteOnly, UserPrincipal user);
 
+  PageResponse<CaseResponse> page(
+      String keyword,
+      Long courseId,
+      String status,
+      Boolean favoriteOnly,
+      long page,
+      long size,
+      UserPrincipal user);
+
   List<CaseResponse> published(String keyword, Long courseId, UserPrincipal user);
+
+  PageResponse<CaseResponse> publishedPage(
+      String keyword, Long courseId, long page, long size, UserPrincipal user);
 
   List<CaseResponse> mine(UserPrincipal user);
 

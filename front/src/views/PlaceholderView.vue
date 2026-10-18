@@ -7,7 +7,6 @@ const names = {
   resource: '教学资源库',
   case: '教学案例库',
   ai: 'AI资源整合',
-  'package-plan': '资源包与授课方案',
   system: '系统管理',
 }
 const title = computed(() => names[route.params.module] || '功能模块')

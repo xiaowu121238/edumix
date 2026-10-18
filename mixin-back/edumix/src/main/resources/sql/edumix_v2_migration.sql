@@ -114,56 +114,6 @@ CREATE TABLE IF NOT EXISTS resource_review (
     CONSTRAINT fk_resource_review_reviewer FOREIGN KEY (reviewer_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Resource audit history';
 
-CALL add_column_if_missing('resource_package','visibility',"`visibility` VARCHAR(20) NOT NULL DEFAULT 'PRIVATE' AFTER `creator_id`");
-
-CREATE TABLE IF NOT EXISTS package_resource (
-    package_id BIGINT UNSIGNED NOT NULL,
-    resource_id BIGINT UNSIGNED NOT NULL,
-    sort_order INT NOT NULL DEFAULT 0,
-    note VARCHAR(500),
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (package_id, resource_id),
-    KEY idx_package_resource_order (package_id, sort_order),
-    CONSTRAINT fk_package_resource_package FOREIGN KEY (package_id) REFERENCES resource_package(id),
-    CONSTRAINT fk_package_resource_resource FOREIGN KEY (resource_id) REFERENCES teaching_resource(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Resources in packages';
-
-CREATE TABLE IF NOT EXISTS package_case (
-    package_id BIGINT UNSIGNED NOT NULL,
-    case_id BIGINT UNSIGNED NOT NULL,
-    sort_order INT NOT NULL DEFAULT 0,
-    note VARCHAR(500),
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (package_id, case_id),
-    KEY idx_package_case_order (package_id, sort_order),
-    CONSTRAINT fk_package_case_package FOREIGN KEY (package_id) REFERENCES resource_package(id),
-    CONSTRAINT fk_package_case_case FOREIGN KEY (case_id) REFERENCES teaching_case(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Cases in packages';
-
-INSERT IGNORE INTO package_resource (package_id, resource_id, sort_order, note)
-SELECT package_id, item_id, sort_order, note FROM resource_package_item WHERE item_type = 'RESOURCE';
-INSERT IGNORE INTO package_case (package_id, case_id, sort_order, note)
-SELECT package_id, item_id, sort_order, note FROM resource_package_item WHERE item_type = 'CASE';
-
-CALL add_column_if_missing('teaching_plan','teaching_method','`teaching_method` TEXT NULL AFTER `teaching_objectives`');
-CALL add_column_if_missing('teaching_plan','total_minutes','`total_minutes` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `difficult_points`');
-CALL add_column_if_missing('teaching_plan','visibility',"`visibility` VARCHAR(20) NOT NULL DEFAULT 'PRIVATE' AFTER `total_minutes`");
-
-CREATE TABLE IF NOT EXISTS plan_package (
-    plan_id BIGINT UNSIGNED NOT NULL,
-    package_id BIGINT UNSIGNED NOT NULL,
-    use_stage VARCHAR(30) NOT NULL DEFAULT 'IN_CLASS',
-    sort_order INT NOT NULL DEFAULT 0,
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (plan_id, package_id),
-    KEY idx_plan_package_order (plan_id, sort_order),
-    CONSTRAINT fk_plan_package_plan FOREIGN KEY (plan_id) REFERENCES teaching_plan(id),
-    CONSTRAINT fk_plan_package_package FOREIGN KEY (package_id) REFERENCES resource_package(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Packages used by lesson plans';
-
-INSERT IGNORE INTO plan_package (plan_id, package_id, use_stage, sort_order)
-SELECT id, package_id, 'IN_CLASS', 1 FROM teaching_plan WHERE package_id IS NOT NULL;
-
 CREATE TABLE IF NOT EXISTS point_account (
     user_id BIGINT UNSIGNED PRIMARY KEY,
     balance INT UNSIGNED NOT NULL DEFAULT 0,
@@ -236,25 +186,7 @@ CREATE TABLE IF NOT EXISTS case_unlock (
     CONSTRAINT fk_case_unlock_case FOREIGN KEY (case_id) REFERENCES teaching_case(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Point-paid case access';
 
-CALL add_column_if_missing('ai_generation_task','package_id','`package_id` BIGINT UNSIGNED NULL AFTER `course_id`');
-CALL add_column_if_missing('ai_generation_task','plan_id','`plan_id` BIGINT UNSIGNED NULL AFTER `package_id`');
 CALL add_column_if_missing('ai_generation_task','requirement_text','`requirement_text` TEXT NULL AFTER `task_type`');
-
--- Backfill V1 tasks before enforcing the exclusive target constraint.
-UPDATE ai_generation_task
-SET package_id=1,
-    requirement_text='为Spring Boot微服务实践推荐适合课中使用的资源与案例'
-WHERE id=1 AND package_id IS NULL AND plan_id IS NULL;
-
-SET @has_ai_package_fk = (SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND table_name='ai_generation_task' AND constraint_name='fk_ai_package');
-SET @sql = IF(@has_ai_package_fk=0,'ALTER TABLE ai_generation_task ADD CONSTRAINT fk_ai_package FOREIGN KEY (package_id) REFERENCES resource_package(id)','SELECT 1');
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
-SET @has_ai_plan_fk = (SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND table_name='ai_generation_task' AND constraint_name='fk_ai_plan');
-SET @sql = IF(@has_ai_plan_fk=0,'ALTER TABLE ai_generation_task ADD CONSTRAINT fk_ai_plan FOREIGN KEY (plan_id) REFERENCES teaching_plan(id)','SELECT 1');
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
-SET @has_ai_target_ck = (SELECT COUNT(*) FROM information_schema.table_constraints WHERE constraint_schema=DATABASE() AND table_name='ai_generation_task' AND constraint_name='ck_ai_task_target');
-SET @sql = IF(@has_ai_target_ck=0,'ALTER TABLE ai_generation_task ADD CONSTRAINT ck_ai_task_target CHECK ((package_id IS NULL) <> (plan_id IS NULL))','SELECT 1');
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS ai_recommendation (
     id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -360,6 +292,4 @@ INSERT IGNORE INTO ai_recommendation (id,task_id,resource_id,case_id,relevance_s
 INSERT IGNORE INTO resource_favorite (user_id,resource_id) VALUES (1,3);
 INSERT IGNORE INTO case_favorite (user_id,case_id) VALUES (1,1);
 
--- resource_package_item and teaching_plan.package_id are retained only for V1 compatibility.
--- New code should use package_resource/package_case and plan_package.
 DROP PROCEDURE IF EXISTS add_column_if_missing;

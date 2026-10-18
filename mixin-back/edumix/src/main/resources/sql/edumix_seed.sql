@@ -3,7 +3,7 @@ SET NAMES utf8mb4;
 
 INSERT INTO sys_role (id, role_code, role_name, description) VALUES
   (1, 'ADMIN', '系统管理员', '平台配置与用户管理'),
-  (2, 'TEACHER', '教师', '课程、资源和授课方案管理'),
+  (2, 'TEACHER', '教师', '课程、资源和教学案例管理'),
   (3, 'AUDITOR', '资源审核员', '教学资源与案例审核')
 ON DUPLICATE KEY UPDATE role_name = VALUES(role_name), description = VALUES(description);
 
@@ -62,38 +62,16 @@ ON DUPLICATE KEY UPDATE case_name = VALUES(case_name), summary = VALUES(summary)
 
 INSERT IGNORE INTO case_knowledge_point (case_id, knowledge_point_id) VALUES (3,7),(4,8);
 
-INSERT INTO resource_package (id, package_no, package_name, description, course_id, creator_id, generation_type, status, progress) VALUES
-  (1,'PKG-2026-001','Spring Boot 实战资源包','面向微服务实践教学的课件、案例与练习合集',2,1,'AI','PUBLISHED',100),
-  (2,'PKG-2026-002','Java面向对象基础资源包','面向第一章教学的资源组合',1,1,'AI','DRAFT',75)
-ON DUPLICATE KEY UPDATE package_name = VALUES(package_name), description = VALUES(description), status = VALUES(status), progress = VALUES(progress);
-
-INSERT IGNORE INTO resource_package_item (package_id, item_type, item_id, sort_order, note) VALUES
-  (1,'RESOURCE',4,1,'设计模式课前练习'),(1,'CASE',1,2,'项目导入案例'),
-  (2,'RESOURCE',1,1,'课堂讲授课件'),(2,'RESOURCE',2,2,'课后微课'),(2,'CASE',3,3,'协作实践案例');
-
-INSERT INTO teaching_plan (id, plan_no, plan_name, course_id, chapter_id, package_id, creator_id, teaching_objectives, key_points, difficult_points, status, progress) VALUES
-  (1,'PLAN-2026-001','Spring Boot 核心原理与微服务实践',2,4,1,1,'理解微服务架构并完成基础服务拆分','服务边界与接口设计','分布式数据一致性','DRAFT',75),
-  (2,'PLAN-2026-002','高级软件工程：设计模式实验',2,4,1,1,'能够识别并应用常用设计模式','策略模式、工厂模式','模式选择与权衡','DRAFT',30),
-  (3,'PLAN-2026-003','Java 并发编程第三周教学预案',3,5,NULL,1,'理解线程同步并定位常见并发问题','锁与线程安全','死锁诊断','DRAFT',0)
-ON DUPLICATE KEY UPDATE plan_name = VALUES(plan_name), status = VALUES(status), progress = VALUES(progress);
-
-INSERT INTO teaching_plan_item (id, plan_id, stage_name, stage_type, duration_minutes, content, sort_order) VALUES
-  (1,1,'案例导入','INTRODUCTION',10,'展示传统单体应用扩展问题',1),
-  (2,1,'核心概念讲授','TEACHING',25,'讲解服务拆分、注册发现与配置中心',2),
-  (3,1,'分组架构设计','PRACTICE',35,'学生完成业务边界划分',3),
-  (4,1,'总结与评价','SUMMARY',10,'汇总方案并完成同伴评价',4)
-ON DUPLICATE KEY UPDATE stage_name = VALUES(stage_name), duration_minutes = VALUES(duration_minutes), content = VALUES(content);
-
 INSERT INTO ai_generation_task (id, task_no, user_id, course_id, task_type, input_json, result_json, status, started_time, finished_time) VALUES
-  (1,'AI-2026-001',1,2,'RESOURCE_MATCH',JSON_OBJECT('keywords',JSON_ARRAY('Spring Boot','微服务')),JSON_OBJECT('matchedCount',12,'packageId',1),'SUCCESS',NOW() - INTERVAL 5 MINUTE,NOW() - INTERVAL 4 MINUTE)
+  (1,'AI-2026-001',1,2,'RESOURCE_MATCH',JSON_OBJECT('keywords',JSON_ARRAY('Spring Boot','微服务')),JSON_OBJECT('matchedCount',12),'SUCCESS',NOW() - INTERVAL 5 MINUTE,NOW() - INTERVAL 4 MINUTE)
 ON DUPLICATE KEY UPDATE status = VALUES(status), result_json = VALUES(result_json);
 
 INSERT INTO message (id, message_type, title, content, sender_id, business_type, business_id, create_time) VALUES
-  (1,'SYSTEM','V2.0 版本更新通知：AI 教学助手全新上线','平台已完成升级，新增资源包一键生成、智能知识点提取等功能。',3,NULL,NULL,NOW() - INTERVAL 10 MINUTE),
+  (1,'SYSTEM','V2.0 版本更新通知：AI 教学助手全新上线','平台已完成升级，新增公共资源推荐、教学案例整合和智能知识点提取等功能。',3,NULL,NULL,NOW() - INTERVAL 10 MINUTE),
   (2,'SYSTEM','下周全校停机维护公告','因核心机房网络设备升级，本平台将于本周日凌晨暂停服务。',3,NULL,NULL,NOW() - INTERVAL 1 DAY),
-  (3,'COLLAB','张主任共享了授课方案《高级软件工程》','张主任将您添加为协作教师，您可以查看并编辑相关案例资源。',2,'COURSE',2,NOW() - INTERVAL 2 HOUR),
+  (3,'AUDIT','《设计模式协作课堂实践》已通过审核','负责人已完成案例审核，该案例现已进入公共案例库。',2,'CASE',3,NOW() - INTERVAL 2 HOUR),
   (4,'AUDIT','《多线程死锁案例》已被标记为优秀资源','教务处审核反馈：该案例设计巧妙，建议在公共资源库中重点推荐。',3,'CASE',4,NOW() - INTERVAL 1 DAY),
-  (5,'AUDIT','《Spring Boot 实战》已通过院系审核','您提交的公开教学资源包现已上架至全校资源库。',3,'PACKAGE',1,NOW() - INTERVAL 3 DAY),
+  (5,'AUDIT','《Spring Boot 微服务实战案例》已通过审核','您提交的公开教学案例现已进入公共案例库。',3,'CASE',1,NOW() - INTERVAL 3 DAY),
   (6,'AUDIT','资源格式反馈：视频缺少字幕','建议为微课视频补充字幕文件，以便于 AI 更好地进行文本检索。',3,'RESOURCE',2,NOW() - INTERVAL 5 DAY)
 ON DUPLICATE KEY UPDATE title = VALUES(title), content = VALUES(content);
 

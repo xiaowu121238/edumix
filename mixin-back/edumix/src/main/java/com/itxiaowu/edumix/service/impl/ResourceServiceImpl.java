@@ -1,6 +1,9 @@
 package com.itxiaowu.edumix.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.itxiaowu.edumix.common.PageResponse;
 import com.itxiaowu.edumix.dto.*;
 import com.itxiaowu.edumix.entity.*;
 import com.itxiaowu.edumix.mapper.*;
@@ -59,26 +62,32 @@ public class ResourceServiceImpl implements ResourceService {
   @Override
   public List<ResourceResponse> list(
       String keyword, String type, Long categoryId, Boolean favoriteOnly, UserPrincipal user) {
-    var query =
-        Wrappers.<TeachingResource>lambdaQuery().orderByDesc(TeachingResource::getCreateTime);
-    if (keyword != null && !keyword.isBlank())
-      query.and(
-          q ->
-              q.like(TeachingResource::getResourceName, keyword.trim())
-                  .or()
-                  .like(TeachingResource::getDescription, keyword.trim()));
-    if (type != null && !type.isBlank())
-      query.eq(TeachingResource::getResourceType, type.toUpperCase());
-    if (categoryId != null) query.eq(TeachingResource::getCategoryId, categoryId);
+    LambdaQueryWrapper<TeachingResource> query =
+        resourceQuery(keyword, type, categoryId, favoriteOnly, user);
     Set<Long> favorites =
         favoriteMapper.findByUser(user.getUserId()).stream()
             .map(ResourceFavorite::getResourceId)
             .collect(java.util.stream.Collectors.toSet());
     return resourceMapper.selectList(query).stream()
-        .filter(r -> canRead(r, user))
-        .filter(r -> !Boolean.TRUE.equals(favoriteOnly) || favorites.contains(r.getId()))
         .map(r -> response(r, favorites.contains(r.getId())))
         .toList();
+  }
+
+  @Override
+  public PageResponse<ResourceResponse> page(
+      String keyword,
+      String type,
+      Long categoryId,
+      Boolean favoriteOnly,
+      long page,
+      long size,
+      UserPrincipal user) {
+    Page<TeachingResource> result =
+        resourceMapper.selectPage(
+            pageRequest(page, size), resourceQuery(keyword, type, categoryId, favoriteOnly, user));
+    Set<Long> favorites = favoriteIds(result.getRecords(), user.getUserId());
+    return PageResponse.from(
+        result, resource -> response(resource, favorites.contains(resource.getId())));
   }
 
   @Override
@@ -95,6 +104,24 @@ public class ResourceServiceImpl implements ResourceService {
         .stream()
         .map(resource -> response(resource, favorites.contains(resource.getId())))
         .toList();
+  }
+
+  @Override
+  public PageResponse<ResourceResponse> minePage(
+      String keyword,
+      String type,
+      Long categoryId,
+      Boolean favoriteOnly,
+      long page,
+      long size,
+      UserPrincipal user) {
+    LambdaQueryWrapper<TeachingResource> query =
+        resourceQuery(keyword, type, categoryId, favoriteOnly, user)
+            .eq(TeachingResource::getUploaderId, user.getUserId());
+    Page<TeachingResource> result = resourceMapper.selectPage(pageRequest(page, size), query);
+    Set<Long> favorites = favoriteIds(result.getRecords(), user.getUserId());
+    return PageResponse.from(
+        result, resource -> response(resource, favorites.contains(resource.getId())));
   }
 
   @Transactional
@@ -448,6 +475,48 @@ public class ResourceServiceImpl implements ResourceService {
         || principal.roles().contains("RESOURCE_MANAGER")
         || r.getUploaderId().equals(principal.getUserId())) return true;
     return "PUBLIC".equals(r.getVisibility()) && "APPROVED".equals(r.getAuditStatus());
+  }
+
+  /** 构造资源检索条件。关键词仍按“名称或简介包含关键词”匹配，但权限、收藏等条件在分页前由数据库完成。 */
+  private LambdaQueryWrapper<TeachingResource> resourceQuery(
+      String keyword, String type, Long categoryId, Boolean favoriteOnly, UserPrincipal user) {
+    LambdaQueryWrapper<TeachingResource> query = Wrappers.lambdaQuery();
+    if (keyword != null && !keyword.isBlank()) {
+      String normalized = keyword.trim();
+      query.and(
+          q ->
+              q.like(TeachingResource::getResourceName, normalized)
+                  .or()
+                  .like(TeachingResource::getDescription, normalized));
+    }
+    if (type != null && !type.isBlank())
+      query.eq(TeachingResource::getResourceType, type.toUpperCase());
+    if (categoryId != null) query.eq(TeachingResource::getCategoryId, categoryId);
+    if (!user.roles().contains("ADMIN") && !user.roles().contains("RESOURCE_MANAGER"))
+      query.and(
+          q ->
+              q.eq(TeachingResource::getUploaderId, user.getUserId())
+                  .or(
+                      visible ->
+                          visible
+                              .eq(TeachingResource::getVisibility, "PUBLIC")
+                              .eq(TeachingResource::getAuditStatus, "APPROVED")));
+    if (Boolean.TRUE.equals(favoriteOnly))
+      query.inSql(
+          TeachingResource::getId,
+          "SELECT resource_id FROM resource_favorite WHERE user_id = " + user.getUserId());
+    return query.orderByDesc(TeachingResource::getCreateTime).orderByDesc(TeachingResource::getId);
+  }
+
+  private Page<TeachingResource> pageRequest(long page, long size) {
+    return new Page<>(Math.max(1, page), Math.min(100, Math.max(1, size)));
+  }
+
+  private Set<Long> favoriteIds(List<TeachingResource> records, Long userId) {
+    if (records.isEmpty()) return Set.of();
+    return new HashSet<>(
+        favoriteMapper.findIdsInPage(
+            userId, records.stream().map(TeachingResource::getId).toList()));
   }
 
   private CorrectionResponse correctionResponse(ResourceCorrection correction) {

@@ -1,9 +1,10 @@
 import http from './http'
+import { unwrapPage } from './pagination'
 
 // 文件上传与重新提交使用 multipart/form-data，元数据由后端统一校验。
 
-export const getResources = (params) => http.get('/resources', { params })
-export const getMyResources = () => http.get('/resources/mine')
+export const getResources = async (params) => unwrapPage(await http.get('/resources', { params }))
+export const getMyResources = async (params) => unwrapPage(await http.get('/resources/mine', { params }))
 export const getResourceCategories = () => http.get('/resources/categories')
 export const uploadResource = (data, onUploadProgress) =>
   http.post('/resources/upload', data, {

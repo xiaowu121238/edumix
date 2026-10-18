@@ -1,6 +1,9 @@
 package com.itxiaowu.edumix.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.itxiaowu.edumix.common.PageResponse;
 import com.itxiaowu.edumix.dto.*;
 import com.itxiaowu.edumix.entity.*;
 import com.itxiaowu.edumix.mapper.*;
@@ -39,23 +42,13 @@ public class TeachingCaseServiceImpl implements TeachingCaseService {
   @Override
   public List<CaseResponse> list(
       String keyword, Long courseId, String status, Boolean favoriteOnly, UserPrincipal user) {
-    var query =
-        Wrappers.<TeachingCase>lambdaQuery()
-            // 先完成课程、关键词和审核状态筛选，再让优质案例获得更高展示优先级。
-            .orderByDesc(TeachingCase::getExcellent)
-            .orderByDesc(TeachingCase::getUpdateTime)
-            .orderByDesc(TeachingCase::getId);
-    if (keyword != null && !keyword.isBlank())
-      query.like(TeachingCase::getCaseName, keyword.trim());
-    if (courseId != null) query.eq(TeachingCase::getCourseId, courseId);
-    if (status != null && !status.isBlank())
-      query.eq(TeachingCase::getAuditStatus, status.toUpperCase());
+    LambdaQueryWrapper<TeachingCase> query =
+        caseQuery(keyword, courseId, status, favoriteOnly, user);
     Set<Long> favorites =
         favoriteMapper.findByUser(user.getUserId()).stream()
             .map(CaseFavorite::getCaseId)
             .collect(java.util.stream.Collectors.toSet());
     return caseMapper.selectList(query).stream()
-        .filter(c -> canRead(c, user))
         .filter(
             c ->
                 !Boolean.TRUE.equals(favoriteOnly)
@@ -65,10 +58,57 @@ public class TeachingCaseServiceImpl implements TeachingCaseService {
   }
 
   @Override
+  public PageResponse<CaseResponse> page(
+      String keyword,
+      Long courseId,
+      String status,
+      Boolean favoriteOnly,
+      long page,
+      long size,
+      UserPrincipal user) {
+    Page<TeachingCase> result =
+        caseMapper.selectPage(
+            pageRequest(page, size), caseQuery(keyword, courseId, status, favoriteOnly, user));
+    Set<Long> favorites = favoriteIds(result.getRecords(), user.getUserId());
+    return PageResponse.from(
+        result,
+        teachingCase ->
+            response(
+                teachingCase,
+                favorites.contains(teachingCase.getId()) && contentUnlocked(teachingCase, user),
+                user));
+  }
+
+  @Override
   public List<CaseResponse> published(String keyword, Long courseId, UserPrincipal user) {
     return list(keyword, courseId, "APPROVED", false, user).stream()
         .filter(c -> "PUBLIC".equals(c.visibility()))
         .toList();
+  }
+
+  @Override
+  public PageResponse<CaseResponse> publishedPage(
+      String keyword, Long courseId, long page, long size, UserPrincipal user) {
+    LambdaQueryWrapper<TeachingCase> query =
+        Wrappers.<TeachingCase>lambdaQuery()
+            .eq(TeachingCase::getVisibility, "PUBLIC")
+            .eq(TeachingCase::getAuditStatus, "APPROVED");
+    if (keyword != null && !keyword.isBlank())
+      query.like(TeachingCase::getCaseName, keyword.trim());
+    if (courseId != null) query.eq(TeachingCase::getCourseId, courseId);
+    query
+        .orderByDesc(TeachingCase::getExcellent)
+        .orderByDesc(TeachingCase::getUpdateTime)
+        .orderByDesc(TeachingCase::getId);
+    Page<TeachingCase> result = caseMapper.selectPage(pageRequest(page, size), query);
+    Set<Long> favorites = favoriteIds(result.getRecords(), user.getUserId());
+    return PageResponse.from(
+        result,
+        teachingCase ->
+            response(
+                teachingCase,
+                favorites.contains(teachingCase.getId()) && contentUnlocked(teachingCase, user),
+                user));
   }
 
   @Override
@@ -405,6 +445,44 @@ public class TeachingCaseServiceImpl implements TeachingCaseService {
         || c.getCreatorId().equals(p.getUserId())) return true;
     if (!"APPROVED".equals(c.getAuditStatus())) return false;
     return "PUBLIC".equals(c.getVisibility());
+  }
+
+  /** 保留原有案例名称模糊检索和优质案例优先规则，并在数据库分页前完成权限与收藏筛选。 */
+  private LambdaQueryWrapper<TeachingCase> caseQuery(
+      String keyword, Long courseId, String status, Boolean favoriteOnly, UserPrincipal user) {
+    LambdaQueryWrapper<TeachingCase> query = Wrappers.lambdaQuery();
+    if (keyword != null && !keyword.isBlank())
+      query.like(TeachingCase::getCaseName, keyword.trim());
+    if (courseId != null) query.eq(TeachingCase::getCourseId, courseId);
+    if (status != null && !status.isBlank())
+      query.eq(TeachingCase::getAuditStatus, status.toUpperCase());
+    if (!user.roles().contains("ADMIN") && !user.roles().contains("RESOURCE_MANAGER"))
+      query.and(
+          q ->
+              q.eq(TeachingCase::getCreatorId, user.getUserId())
+                  .or(
+                      visible ->
+                          visible
+                              .eq(TeachingCase::getVisibility, "PUBLIC")
+                              .eq(TeachingCase::getAuditStatus, "APPROVED")));
+    if (Boolean.TRUE.equals(favoriteOnly))
+      query.inSql(
+          TeachingCase::getId,
+          "SELECT case_id FROM case_favorite WHERE user_id = " + user.getUserId());
+    return query
+        .orderByDesc(TeachingCase::getExcellent)
+        .orderByDesc(TeachingCase::getUpdateTime)
+        .orderByDesc(TeachingCase::getId);
+  }
+
+  private Page<TeachingCase> pageRequest(long page, long size) {
+    return new Page<>(Math.max(1, page), Math.min(100, Math.max(1, size)));
+  }
+
+  private Set<Long> favoriteIds(List<TeachingCase> records, Long userId) {
+    if (records.isEmpty()) return Set.of();
+    return new HashSet<>(
+        favoriteMapper.findIdsInPage(userId, records.stream().map(TeachingCase::getId).toList()));
   }
 
   private boolean contentUnlocked(TeachingCase c, UserPrincipal user) {

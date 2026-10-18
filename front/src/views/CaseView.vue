@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { BookOpen, Eye, Heart, Plus, Search } from 'lucide-vue-next'
 import { getPublishedCases, toggleCaseFavorite } from '../api/case'
 import { getCourses } from '../api/course'
+import PaginationBar from '../components/PaginationBar.vue'
 import '../styles/case-access.css'
 
 const router = useRouter(),
@@ -13,6 +14,7 @@ const router = useRouter(),
   error = ref(''),
   notice = ref('')
 const filters = reactive({ keyword: '', courseId: '' })
+const pagination = reactive({ page: 1, size: 10, total: 0, pages: 0 })
 const user = JSON.parse(localStorage.getItem('edumix-user') || '{}')
 const canCreate = user.roles?.some((role) => ['TEACHER', 'ADMIN'].includes(role))
 const visibilityName = { PUBLIC: '公开' }
@@ -23,18 +25,32 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    cases.value =
-      (
-        await getPublishedCases({
-          keyword: filters.keyword || undefined,
-          courseId: filters.courseId || undefined,
-        })
-      ).data || []
+    const result = await getPublishedCases({
+      keyword: filters.keyword || undefined,
+      courseId: filters.courseId || undefined,
+      page: pagination.page,
+      size: pagination.size,
+    })
+    cases.value = result.data || []
+    Object.assign(pagination, {
+      page: Number(result.page?.page || pagination.page),
+      total: Number(result.page?.total || 0),
+      pages: Number(result.page?.pages || 0),
+    })
   } catch (e) {
     error.value = e?.message || '加载失败'
   } finally {
     loading.value = false
   }
+}
+function search() {
+  pagination.page = 1
+  load()
+}
+function changePage(page) {
+  pagination.page = page
+  load()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 async function favorite(item) {
   try {
@@ -71,13 +87,16 @@ onMounted(async () => {
     </header>
     <section class="panel case-filters">
       <label
-        ><Search /><input v-model="filters.keyword" placeholder="搜索已发布案例" @keyup.enter="load" /></label
-      ><select v-model="filters.courseId" @change="load">
+        ><Search /><input
+          v-model="filters.keyword"
+          placeholder="搜索已发布案例"
+          @keyup.enter="search" /></label
+      ><select v-model="filters.courseId" @change="search">
         <option value="">全部课程</option>
         <option v-for="course in courses" :key="course.id" :value="course.id">
           {{ course.courseName }}
         </option></select
-      ><button class="button secondary" @click="load">检索</button>
+      ><button class="button secondary" @click="search">检索</button>
     </section>
     <p v-if="error" class="form-error">{{ error }}</p>
     <p v-if="notice" class="form-success">{{ notice }}</p>
@@ -113,5 +132,11 @@ onMounted(async () => {
         </footer>
       </article>
     </section>
+    <PaginationBar
+      :page="pagination.page"
+      :pages="pagination.pages"
+      :total="pagination.total"
+      @change="changePage"
+    />
   </div>
 </template>

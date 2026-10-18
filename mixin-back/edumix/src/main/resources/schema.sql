@@ -64,3 +64,28 @@ UPDATE teaching_case SET visibility = 'PUBLIC' WHERE visibility IN ('COLLEGE', '
 
 ALTER TABLE teaching_resource ALTER COLUMN visibility SET DEFAULT 'PRIVATE';
 ALTER TABLE teaching_case ALTER COLUMN visibility SET DEFAULT 'PUBLIC';
+
+-- 为资源库和案例库的权限筛选、排序和物理分页补充联合索引。
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'teaching_resource' AND index_name = 'idx_resource_public_page');
+SET @ddl = IF(@idx_exists = 0, 'ALTER TABLE teaching_resource ADD INDEX idx_resource_public_page (visibility, audit_status, deleted, create_time, id)', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'teaching_resource' AND index_name = 'idx_resource_owner_page');
+SET @ddl = IF(@idx_exists = 0, 'ALTER TABLE teaching_resource ADD INDEX idx_resource_owner_page (uploader_id, deleted, create_time, id)', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'teaching_case' AND index_name = 'idx_case_public_page');
+SET @ddl = IF(@idx_exists = 0, 'ALTER TABLE teaching_case ADD INDEX idx_case_public_page (visibility, audit_status, deleted, excellent, update_time, id)', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'teaching_case' AND index_name = 'idx_case_course_page');
+SET @ddl = IF(@idx_exists = 0, 'ALTER TABLE teaching_case ADD INDEX idx_case_course_page (course_id, visibility, audit_status, deleted, excellent, update_time, id)', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
