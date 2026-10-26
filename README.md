@@ -147,9 +147,17 @@ SOURCE mixin-back/edumix/src/main/resources/sql/edumix_auth_accounts.sql;
 SOURCE mixin-back/edumix/src/main/resources/schema.sql;
 ```
 
-以上顺序已经使用空数据库验证。脚本会建立当前系统所需的数据表、演示课程、资源、案例和三个测试账号。
+以上脚本会建立当前系统所需的 22 张数据表、演示课程、资源、案例和三个测试账号。
 
-`application.yaml` 中设置了 `spring.sql.init.mode=always`，因此应用启动时还会重复执行可安全运行的 `schema.sql`，用于补充积分发放与聊天相关表。
+如果数据库来自精简前的 31 表版本，请先备份，再执行一次：
+
+```sql
+SOURCE mixin-back/edumix/src/main/resources/sql/edumix_compact_migration.sql;
+```
+
+该脚本会先迁移审核历史、积分业务记录和私信已读位置，再删除 9 张被合并或停用的旧表；不要在已经精简完成的数据库上重复执行。
+
+`application.yaml` 中设置了 `spring.sql.init.mode=always`，因此应用启动时还会重复执行可安全运行的 `schema.sql`，用于补充统一审核、私信和登录安全所需的字段与索引。
 
 ## 环境变量
 
@@ -324,7 +332,7 @@ npm run build
 - 前端 `VITE_` 环境变量会进入浏览器构建产物，不能用于保存任何密钥。
 - 公共接口只返回已审核且公开的摘要，不返回积分案例正文、服务器文件路径或用户隐私信息。
 - 演示账号与默认密码只能用于本地联调。
-- 正式部署时建议增加独立生产配置、HTTPS、对象存储、数据库备份和 Redis JWT 黑名单。
+- 正式部署时建议增加独立生产配置、HTTPS、对象存储和数据库备份。JWT 注销版本已持久化到 MySQL。
 
 ## 相关文档
 
@@ -333,3 +341,5 @@ npm run build
 - [AI 配置说明](AI_SETUP.md)
 - [认证与权限接口说明](AUTH_API.md)
 - [前端说明](front/README.md)
+
+- [收尾修复与验证（2026-10-19）](docs/finalization-validation.md)

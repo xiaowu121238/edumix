@@ -31,7 +31,7 @@ public class TeachingCaseServiceImpl implements TeachingCaseService {
   private final TeachingCaseMapper caseMapper;
   private final CaseFavoriteMapper favoriteMapper;
   private final CaseRelationMapper relationMapper;
-  private final CaseReviewMapper reviewMapper;
+  private final ContentReviewMapper reviewMapper;
   private final CourseMapper courseMapper;
   private final KnowledgePointMapper pointMapper;
   private final TeachingResourceMapper resourceMapper;
@@ -314,10 +314,13 @@ public class TeachingCaseServiceImpl implements TeachingCaseService {
     int submission =
         Math.toIntExact(
                 reviewMapper.selectCount(
-                    Wrappers.<CaseReview>lambdaQuery().eq(CaseReview::getCaseId, id)))
+                    Wrappers.<ContentReview>lambdaQuery()
+                        .eq(ContentReview::getTargetType, "CASE")
+                        .eq(ContentReview::getTargetId, id)))
             + 1;
-    CaseReview review = new CaseReview();
-    review.setCaseId(id);
+    ContentReview review = new ContentReview();
+    review.setTargetType("CASE");
+    review.setTargetId(id);
     review.setReviewerId(user.getUserId());
     review.setSubmissionNo(submission);
     review.setReviewResult(request.result());
@@ -512,11 +515,12 @@ public class TeachingCaseServiceImpl implements TeachingCaseService {
             .filter(Objects::nonNull)
             .map(TeachingResource::getResourceName)
             .toList();
-    CaseReview last =
+    ContentReview last =
         reviewMapper.selectOne(
-            Wrappers.<CaseReview>lambdaQuery()
-                .eq(CaseReview::getCaseId, c.getId())
-                .orderByDesc(CaseReview::getSubmissionNo)
+            Wrappers.<ContentReview>lambdaQuery()
+                .eq(ContentReview::getTargetType, "CASE")
+                .eq(ContentReview::getTargetId, c.getId())
+                .orderByDesc(ContentReview::getSubmissionNo)
                 .last("LIMIT 1"));
     return new CaseResponse(
         c.getId(),

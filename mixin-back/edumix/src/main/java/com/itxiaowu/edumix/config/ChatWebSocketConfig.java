@@ -58,7 +58,8 @@ public class ChatWebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 throw new AccessDeniedException("私信连接需要登录");
               try {
                 Claims claims = jwtService.parse(header.substring(7));
-                if (tokenBlacklist.isRevoked(claims.getId()))
+                if (tokenBlacklist.isRevoked(
+                    claims.get("uid", Long.class), claims.get("tv", Integer.class)))
                   throw new AccessDeniedException("登录状态已失效");
                 UserDetails user = users.loadUserByUsername(claims.getSubject());
                 if (!user.isEnabled()

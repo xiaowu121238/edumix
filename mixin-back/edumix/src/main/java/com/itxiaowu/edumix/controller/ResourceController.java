@@ -49,6 +49,18 @@ public class ResourceController {
         resourceService.minePage(keyword, type, categoryId, favoriteOnly, page, size, user));
   }
 
+  @GetMapping("/mine/stats")
+  public ApiResponse<java.util.Map<String, Long>> mineStats(
+      @AuthenticationPrincipal UserPrincipal user) {
+    return ApiResponse.success(resourceService.mineStats(user));
+  }
+
+  @GetMapping("/by-ids")
+  public ApiResponse<List<ResourceResponse>> byIds(
+      @RequestParam List<Long> ids, @AuthenticationPrincipal UserPrincipal user) {
+    return ApiResponse.success(resourceService.byIds(ids, user));
+  }
+
   @GetMapping("/categories")
   public ApiResponse<List<ResourceCategory>> categories() {
     return ApiResponse.success(resourceService.categories());

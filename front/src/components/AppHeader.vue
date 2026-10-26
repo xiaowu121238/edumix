@@ -17,7 +17,7 @@ const unreadTotal = ref(0)
 let unreadTimer
 async function refreshUnread() {
   try {
-    const counts = (await getUnreadCounts()).data || {}
+    const counts = (await getUnreadCounts({ skipErrorNotice: true })).data || {}
     unreadTotal.value = (counts.system || 0) + (counts.audit || 0) + (counts.privateMessages || 0)
   } catch (_) {
     unreadTotal.value = 0

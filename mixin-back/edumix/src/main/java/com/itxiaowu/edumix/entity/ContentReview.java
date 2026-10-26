@@ -6,12 +6,17 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-/** 案例审核记录实体，保留负责人每次通过或驳回的处理信息。 */
+/**
+ * 统一内容审核记录。
+ *
+ * <p>资源和案例共用一张审核表，通过 {@code targetType} 与 {@code targetId} 定位被审核内容，避免两套结构完全相同的审核表。
+ */
 @Data
-@TableName("case_review")
-public class CaseReview {
+@TableName("content_review")
+public class ContentReview {
   @TableId private Long id;
-  private Long caseId;
+  private String targetType;
+  private Long targetId;
   private Long reviewerId;
   private Integer submissionNo;
   private String reviewResult;

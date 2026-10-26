@@ -1,25 +1,23 @@
--- Private chat data, separate from platform notification tables.
-CREATE TABLE IF NOT EXISTS point_grant (
+-- 统一保存资源和案例的审核历史。
+CREATE TABLE IF NOT EXISTS content_review (
   id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  operator_id BIGINT UNSIGNED NOT NULL,
-  recipient_id BIGINT UNSIGNED NOT NULL,
-  amount INT UNSIGNED NOT NULL,
-  reason VARCHAR(500) NOT NULL,
+  target_type VARCHAR(20) NOT NULL COMMENT 'RESOURCE CASE',
+  target_id BIGINT UNSIGNED NOT NULL,
+  reviewer_id BIGINT UNSIGNED NOT NULL,
+  submission_no INT UNSIGNED NOT NULL DEFAULT 1,
+  review_result VARCHAR(20) NOT NULL COMMENT 'APPROVED REJECTED',
+  review_comment TEXT,
+  reviewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_point_grant_recipient (recipient_id, create_time),
-  CONSTRAINT fk_point_grant_operator FOREIGN KEY (operator_id) REFERENCES sys_user(id),
-  CONSTRAINT fk_point_grant_recipient FOREIGN KEY (recipient_id) REFERENCES sys_user(id)
+  update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deleted TINYINT NOT NULL DEFAULT 0,
+  UNIQUE KEY uk_content_review_submission (target_type,target_id,submission_no),
+  KEY idx_content_review_reviewer (reviewer_id,reviewed_at),
+  KEY idx_content_review_target (target_type,target_id,reviewed_at),
+  CONSTRAINT fk_content_review_reviewer FOREIGN KEY (reviewer_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO point_rule(rule_code,rule_name,points_value,daily_limit,enabled,description) VALUES
-  ('REGISTER','教师注册奖励',20,NULL,1,'自行注册教师账号后一次性发放'),
-  ('DAILY_CHECKIN','每日签到',5,1,1,'每日首次签到奖励'),
-  ('CASE_APPROVED_FREE','免费案例审核通过',20,NULL,1,'同一案例仅奖励一次'),
-  ('CASE_APPROVED_PAID','积分案例审核通过',10,NULL,1,'同一案例仅奖励一次'),
-  ('CASE_UNLOCK_SPEND','积分案例解锁支出',0,NULL,1,'按案例实际定价扣除'),
-  ('CASE_UNLOCK_INCOME','积分案例解锁收入',0,NULL,1,'按实际成交价格全额给作者'),
-  ('ADMIN_GRANT','管理员发放',0,NULL,1,'由管理员核验密码后手动发放')
-ON DUPLICATE KEY UPDATE rule_name=VALUES(rule_name),points_value=VALUES(points_value),daily_limit=VALUES(daily_limit),description=VALUES(description);
+-- 私信数据与平台通知分开保存；两名成员的已读位置直接记录在会话表中。
 
 CREATE TABLE IF NOT EXISTS chat_conversation (
   id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -27,6 +25,8 @@ CREATE TABLE IF NOT EXISTS chat_conversation (
   user_high_id BIGINT UNSIGNED NOT NULL,
   last_message_id BIGINT UNSIGNED NULL,
   last_message_at DATETIME NULL,
+  low_last_read_message_id BIGINT UNSIGNED NULL,
+  high_last_read_message_id BIGINT UNSIGNED NULL,
   create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uk_chat_pair (user_low_id, user_high_id),
   KEY idx_chat_low_recent (user_low_id, last_message_at),
@@ -47,15 +47,18 @@ CREATE TABLE IF NOT EXISTS chat_message (
   CONSTRAINT fk_chat_message_sender FOREIGN KEY (sender_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS chat_read_cursor (
-  conversation_id BIGINT UNSIGNED NOT NULL,
-  user_id BIGINT UNSIGNED NOT NULL,
-  last_read_message_id BIGINT UNSIGNED NULL,
-  update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (conversation_id, user_id),
-  CONSTRAINT fk_chat_cursor_conversation FOREIGN KEY (conversation_id) REFERENCES chat_conversation(id),
-  CONSTRAINT fk_chat_cursor_user FOREIGN KEY (user_id) REFERENCES sys_user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- 兼容已存在的会话表和积分流水表。
+SET @column_exists = (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='chat_conversation' AND column_name='low_last_read_message_id');
+SET @ddl = IF(@column_exists=0,'ALTER TABLE chat_conversation ADD COLUMN low_last_read_message_id BIGINT UNSIGNED NULL AFTER last_message_at','SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @column_exists = (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='chat_conversation' AND column_name='high_last_read_message_id');
+SET @ddl = IF(@column_exists=0,'ALTER TABLE chat_conversation ADD COLUMN high_last_read_message_id BIGINT UNSIGNED NULL AFTER low_last_read_message_id','SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @column_exists = (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='point_log' AND column_name='operator_id');
+SET @ddl = IF(@column_exists=0,'ALTER TABLE point_log ADD COLUMN operator_id BIGINT UNSIGNED NULL AFTER user_id','SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- The current product has only two visibility scopes. Normalize legacy data left
 -- by early school/college builds while preserving every row's audit status.
@@ -89,3 +92,8 @@ SET @ddl = IF(@idx_exists = 0, 'ALTER TABLE teaching_case ADD INDEX idx_case_cou
 PREPARE stmt FROM @ddl;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- 注销版本并入用户表，避免为 JWT 黑名单单独增加一张技术表。
+SET @column_exists = (SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='sys_user' AND column_name='token_version');
+SET @ddl = IF(@column_exists=0,'ALTER TABLE sys_user ADD COLUMN token_version INT UNSIGNED NOT NULL DEFAULT 0 AFTER status','SELECT 1');
+PREPARE stmt FROM @ddl; EXECUTE stmt; DEALLOCATE PREPARE stmt;

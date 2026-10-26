@@ -1,5 +1,6 @@
 # 本地 Git 历史备份，不参与新仓库提交。
 .git-backup-local/
+database-backups/
 
 # 前端依赖与构建产物。
 **/node_modules/

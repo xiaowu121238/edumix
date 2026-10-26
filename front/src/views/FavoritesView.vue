@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   BookOpen,
@@ -17,6 +17,14 @@ import {
 import { getCases, toggleCaseFavorite } from '../api/case'
 import { getResourceFile, getResources, toggleResourceFavorite } from '../api/resource'
 
+import PaginationBar from '../components/PaginationBar.vue'
+
+const page = ref(1),
+  pageSize = 12,
+  totals = ref({ resource: 0, case: 0 }),
+  counts = ref({ resource: 0, case: 0 })
+let requestId = 0,
+  searchTimer
 const router = useRouter(),
   active = ref('resource'),
   resources = ref([]),
@@ -28,36 +36,24 @@ const router = useRouter(),
 const preview = ref(null),
   previewUrl = ref('')
 const typeNames = { IMAGE: '图片', PDF: 'PDF', VIDEO: '视频', DOCUMENT: '文档' }
-const resourceTags = computed(() => [
-  '全部',
-  ...new Set(resources.value.map((item) => item.categoryName || typeNames[item.resourceType] || '未分类')),
-])
-const caseTags = computed(() => [
-  '全部',
-  ...new Set(
-    cases.value.flatMap((item) => [item.courseName || '未指定课程', ...(item.knowledgePointNames || [])]),
-  ),
-])
-const tags = computed(() => (active.value === 'resource' ? resourceTags.value : caseTags.value))
-const visibleResources = computed(() =>
-  resources.value.filter(
-    (item) =>
-      (tag.value === '全部' ||
-        (item.categoryName || typeNames[item.resourceType] || '未分类') === tag.value) &&
-      (!keyword.value ||
-        `${item.resourceName} ${item.description || ''}`.toLowerCase().includes(keyword.value.toLowerCase())),
-  ),
-)
-const visibleCases = computed(() =>
-  cases.value.filter(
-    (item) =>
-      (tag.value === '全部' ||
-        item.courseName === tag.value ||
-        (item.knowledgePointNames || []).includes(tag.value)) &&
-      (!keyword.value ||
-        `${item.caseName} ${item.summary || ''}`.toLowerCase().includes(keyword.value.toLowerCase())),
-  ),
-)
+const tags = computed(() => (active.value === 'resource' ? ['全部', ...Object.values(typeNames)] : ['全部']))
+const visibleResources = computed(() => resources.value)
+const visibleCases = computed(() => cases.value)
+watch(keyword, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    page.value = 1
+    load()
+  }, 250)
+})
+watch(tag, () => {
+  page.value = 1
+  load()
+})
+function changePage(value) {
+  page.value = value
+  load()
+}
 const iconFor = (type) => ({ IMAGE: Image, PDF: FileText, VIDEO: Film, DOCUMENT: File })[type] || File
 const formatSize = (size) => {
   if (!size) return '0 B'
@@ -66,30 +62,45 @@ const formatSize = (size) => {
   return `${(size / 1024 ** i).toFixed(i ? 1 : 0)} ${units[i]}`
 }
 async function load() {
+  const current = ++requestId
   loading.value = true
   error.value = ''
   try {
-    const [r, c] = await Promise.all([
-      getResources({ favoriteOnly: true, size: 100 }),
-      getCases({ favoriteOnly: true, size: 100 }),
+    const params = { favoriteOnly: true, page: page.value, size: pageSize, keyword: keyword.value }
+    const type = Object.keys(typeNames).find((key) => typeNames[key] === tag.value)
+    const [r, c, rt, ct] = await Promise.all([
+      getResources({ ...params, type }),
+      getCases(params),
+      getResources({ favoriteOnly: true, size: 1 }),
+      getCases({ favoriteOnly: true, size: 1 }),
     ])
+    if (current !== requestId) return
     resources.value = r.data || []
     cases.value = c.data || []
+    totals.value = { resource: r.page?.total ?? r.data.length, case: c.page?.total ?? c.data.length }
+    counts.value = { resource: rt.page?.total ?? rt.data.length, case: ct.page?.total ?? ct.data.length }
+    const pages = Math.max(1, Math.ceil(totals.value[active.value] / pageSize))
+    if (page.value > pages) {
+      page.value = pages
+      return load()
+    }
   } catch (e) {
-    error.value = e?.message || '收藏内容加载失败'
+    if (current === requestId) error.value = e?.message || '收藏内容加载失败'
   } finally {
-    loading.value = false
+    if (current === requestId) loading.value = false
   }
 }
 function changeTab(value) {
   active.value = value
   tag.value = '全部'
   keyword.value = ''
+  page.value = 1
+  load()
 }
 async function removeResource(item) {
   try {
     await toggleResourceFavorite(item.id)
-    resources.value = resources.value.filter((r) => r.id !== item.id)
+    await load()
   } catch (e) {
     error.value = e?.message || '取消收藏失败'
   }
@@ -97,7 +108,7 @@ async function removeResource(item) {
 async function removeCase(item) {
   try {
     await toggleCaseFavorite(item.id)
-    cases.value = cases.value.filter((c) => c.id !== item.id)
+    await load()
   } catch (e) {
     error.value = e?.message || '取消收藏失败'
   }
@@ -127,7 +138,11 @@ function closePreview() {
   preview.value = null
 }
 onMounted(load)
-onBeforeUnmount(closePreview)
+onBeforeUnmount(() => {
+  ++requestId
+  clearTimeout(searchTimer)
+  closePreview()
+})
 </script>
 
 <template>
@@ -137,14 +152,14 @@ onBeforeUnmount(closePreview)
         <h1>个人收藏</h1>
         <p>将收藏的教学资源与案例分开管理，并按标签快速归类。</p>
       </div>
-      <span class="favorite-total"><Heart />共 {{ resources.length + cases.length }} 项收藏</span>
+      <span class="favorite-total"><Heart />共 {{ counts.resource + counts.case }} 项收藏</span>
     </header>
     <section class="panel favorite-toolbar">
       <nav>
         <button :class="{ active: active === 'resource' }" @click="changeTab('resource')">
-          <LibraryBig />收藏的资源 <b>{{ resources.length }}</b></button
+          <LibraryBig />收藏的资源 <b>{{ counts.resource }}</b></button
         ><button :class="{ active: active === 'case' }" @click="changeTab('case')">
-          <BookOpen />收藏的案例 <b>{{ cases.length }}</b>
+          <BookOpen />收藏的案例 <b>{{ counts.case }}</b>
         </button>
       </nav>
       <label
@@ -216,6 +231,13 @@ onBeforeUnmount(closePreview)
         </article>
       </section></template
     >
+    <PaginationBar
+      v-if="!loading"
+      :page="page"
+      :pages="Math.ceil(totals[active] / pageSize)"
+      :total="totals[active]"
+      @change="changePage"
+    />
     <div v-if="preview" class="modal-mask" @click.self="closePreview">
       <section class="modal-card preview-card">
         <header>

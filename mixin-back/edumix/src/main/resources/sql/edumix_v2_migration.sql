@@ -80,9 +80,10 @@ CREATE TABLE IF NOT EXISTS case_resource (
     CONSTRAINT fk_case_resource_resource FOREIGN KEY (resource_id) REFERENCES teaching_resource(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Resources used by cases';
 
-CREATE TABLE IF NOT EXISTS case_review (
+CREATE TABLE IF NOT EXISTS content_review (
     id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    case_id BIGINT UNSIGNED NOT NULL,
+    target_type VARCHAR(20) NOT NULL COMMENT 'RESOURCE CASE',
+    target_id BIGINT UNSIGNED NOT NULL,
     reviewer_id BIGINT UNSIGNED NOT NULL,
     submission_no INT UNSIGNED NOT NULL DEFAULT 1,
     review_result VARCHAR(20) NOT NULL COMMENT 'APPROVED REJECTED',
@@ -91,28 +92,11 @@ CREATE TABLE IF NOT EXISTS case_review (
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted TINYINT NOT NULL DEFAULT 0,
-    UNIQUE KEY uk_case_review_submission (case_id, submission_no),
-    KEY idx_case_review_reviewer (reviewer_id, reviewed_at),
-    CONSTRAINT fk_case_review_case FOREIGN KEY (case_id) REFERENCES teaching_case(id),
-    CONSTRAINT fk_case_review_reviewer FOREIGN KEY (reviewer_id) REFERENCES sys_user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Case audit history';
-
-CREATE TABLE IF NOT EXISTS resource_review (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    resource_id BIGINT UNSIGNED NOT NULL,
-    reviewer_id BIGINT UNSIGNED NOT NULL,
-    submission_no INT UNSIGNED NOT NULL DEFAULT 1,
-    review_result VARCHAR(20) NOT NULL COMMENT 'APPROVED REJECTED',
-    review_comment TEXT,
-    reviewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted TINYINT NOT NULL DEFAULT 0,
-    UNIQUE KEY uk_resource_review_submission (resource_id, submission_no),
-    KEY idx_resource_review_reviewer (reviewer_id, reviewed_at),
-    CONSTRAINT fk_resource_review_resource FOREIGN KEY (resource_id) REFERENCES teaching_resource(id),
-    CONSTRAINT fk_resource_review_reviewer FOREIGN KEY (reviewer_id) REFERENCES sys_user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Resource audit history';
+    UNIQUE KEY uk_content_review_submission (target_type, target_id, submission_no),
+    KEY idx_content_review_reviewer (reviewer_id, reviewed_at),
+    KEY idx_content_review_target (target_type, target_id, reviewed_at),
+    CONSTRAINT fk_content_review_reviewer FOREIGN KEY (reviewer_id) REFERENCES sys_user(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Unified content audit history';
 
 CREATE TABLE IF NOT EXISTS point_account (
     user_id BIGINT UNSIGNED PRIMARY KEY,
@@ -126,36 +110,10 @@ CREATE TABLE IF NOT EXISTS point_account (
     CONSTRAINT ck_point_account_balance CHECK (balance >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User point accounts';
 
-CREATE TABLE IF NOT EXISTS point_rule (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    rule_code VARCHAR(50) NOT NULL,
-    rule_name VARCHAR(100) NOT NULL,
-    points_value INT NOT NULL,
-    daily_limit INT UNSIGNED,
-    enabled TINYINT NOT NULL DEFAULT 1,
-    description VARCHAR(500),
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted TINYINT NOT NULL DEFAULT 0,
-    UNIQUE KEY uk_point_rule_code (rule_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Configurable point rules';
-
-CREATE TABLE IF NOT EXISTS daily_checkin (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT UNSIGNED NOT NULL,
-    checkin_date DATE NOT NULL,
-    reward_points INT UNSIGNED NOT NULL,
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted TINYINT NOT NULL DEFAULT 0,
-    UNIQUE KEY uk_daily_checkin (user_id, checkin_date),
-    CONSTRAINT fk_daily_checkin_user FOREIGN KEY (user_id) REFERENCES sys_user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Daily check-ins';
-
 CREATE TABLE IF NOT EXISTS point_log (
     id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
-    rule_id BIGINT UNSIGNED,
+    operator_id BIGINT UNSIGNED,
     business_type VARCHAR(30) NOT NULL,
     business_id BIGINT UNSIGNED NOT NULL,
     change_amount INT NOT NULL,
@@ -166,47 +124,8 @@ CREATE TABLE IF NOT EXISTS point_log (
     deleted TINYINT NOT NULL DEFAULT 0,
     UNIQUE KEY uk_point_log_business (user_id, business_type, business_id),
     KEY idx_point_log_user_time (user_id, create_time),
-    CONSTRAINT fk_point_log_user FOREIGN KEY (user_id) REFERENCES sys_user(id),
-    CONSTRAINT fk_point_log_rule FOREIGN KEY (rule_id) REFERENCES point_rule(id)
+    CONSTRAINT fk_point_log_user FOREIGN KEY (user_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Immutable point ledger';
-
-CREATE TABLE IF NOT EXISTS case_unlock (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT UNSIGNED NOT NULL,
-    case_id BIGINT UNSIGNED NOT NULL,
-    cost_points INT UNSIGNED NOT NULL,
-    author_income INT UNSIGNED NOT NULL DEFAULT 0,
-    unlocked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted TINYINT NOT NULL DEFAULT 0,
-    UNIQUE KEY uk_case_unlock (user_id, case_id),
-    KEY idx_case_unlock_case (case_id),
-    CONSTRAINT fk_case_unlock_user FOREIGN KEY (user_id) REFERENCES sys_user(id),
-    CONSTRAINT fk_case_unlock_case FOREIGN KEY (case_id) REFERENCES teaching_case(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Point-paid case access';
-
-CALL add_column_if_missing('ai_generation_task','requirement_text','`requirement_text` TEXT NULL AFTER `task_type`');
-
-CREATE TABLE IF NOT EXISTS ai_recommendation (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    task_id BIGINT UNSIGNED NOT NULL,
-    resource_id BIGINT UNSIGNED,
-    case_id BIGINT UNSIGNED,
-    relevance_score DECIMAL(5,4) NOT NULL,
-    use_stage VARCHAR(30),
-    recommendation_reason TEXT,
-    use_suggestion TEXT,
-    selected TINYINT NOT NULL DEFAULT 0,
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted TINYINT NOT NULL DEFAULT 0,
-    KEY idx_ai_recommendation_task_score (task_id, relevance_score),
-    CONSTRAINT fk_ai_recommendation_task FOREIGN KEY (task_id) REFERENCES ai_generation_task(id),
-    CONSTRAINT fk_ai_recommendation_resource FOREIGN KEY (resource_id) REFERENCES teaching_resource(id),
-    CONSTRAINT fk_ai_recommendation_case FOREIGN KEY (case_id) REFERENCES teaching_case(id),
-    CONSTRAINT ck_ai_recommendation_target CHECK ((resource_id IS NULL) <> (case_id IS NULL))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI candidate recommendations confirmed by teachers';
 
 CREATE TABLE IF NOT EXISTS resource_favorite (
     user_id BIGINT UNSIGNED NOT NULL,
@@ -262,32 +181,20 @@ UPDATE teaching_case SET
 INSERT IGNORE INTO case_resource (case_id, resource_id, sort_order, use_description) VALUES
   (3,4,1,'课堂分组练习材料'),(4,5,1,'并发实验配套指导');
 
-INSERT IGNORE INTO case_review (id,case_id,reviewer_id,submission_no,review_result,review_comment) VALUES
-  (1,1,2,1,'APPROVED','案例结构完整，同意公开。'),(2,4,2,1,'APPROVED','问题典型，建议标记为优秀案例。');
-INSERT IGNORE INTO resource_review (id,resource_id,reviewer_id,submission_no,review_result,review_comment) VALUES
-  (1,1,2,1,'APPROVED','课件内容完整。'),(2,5,2,1,'REJECTED','视频或实验资料需要补充字幕说明。');
-
-INSERT INTO point_rule (id,rule_code,rule_name,points_value,daily_limit,enabled,description) VALUES
-  (1,'DAILY_CHECKIN','每日签到',5,1,1,'教师每日首次签到奖励'),
-  (2,'CASE_APPROVED','公共案例审核通过',25,NULL,1,'案例公开并审核通过后奖励作者'),
-  (3,'CORRECTION_ACCEPTED','有效纠错',10,NULL,1,'纠错建议被采纳后奖励'),
-  (4,'CASE_UNLOCK','积分案例解锁',-20,NULL,1,'首次解锁积分案例扣除')
-ON DUPLICATE KEY UPDATE rule_name=VALUES(rule_name),points_value=VALUES(points_value),daily_limit=VALUES(daily_limit),enabled=VALUES(enabled);
+INSERT IGNORE INTO content_review (id,target_type,target_id,reviewer_id,submission_no,review_result,review_comment) VALUES
+  (1,'CASE',1,2,1,'APPROVED','案例结构完整，同意公开。'),
+  (2,'CASE',4,2,1,'APPROVED','问题典型，建议标记为优秀案例。'),
+  (3,'RESOURCE',1,2,1,'APPROVED','课件内容完整。'),
+  (4,'RESOURCE',5,2,1,'REJECTED','视频或实验资料需要补充字幕说明。');
 
 INSERT IGNORE INTO point_account (user_id,balance,total_income,total_expense,version) VALUES
   (1,80,100,20,0),(2,125,125,0,0),(3,0,0,0,0)
 ;
 
-INSERT IGNORE INTO daily_checkin (id,user_id,checkin_date,reward_points) VALUES (1,1,CURRENT_DATE,5);
-INSERT IGNORE INTO point_log (id,user_id,rule_id,business_type,business_id,change_amount,balance_after,remark) VALUES
-  (1,1,1,'DAILY_CHECKIN',DATE_FORMAT(CURRENT_DATE,'%Y%m%d'),5,80,'每日签到奖励'),
-  (2,1,2,'CASE_APPROVED',4,25,100,'优秀公共案例审核通过'),
-  (3,1,4,'CASE_UNLOCK',2,-20,80,'解锁积分案例');
-INSERT IGNORE INTO case_unlock (id,user_id,case_id,cost_points,author_income) VALUES (1,1,2,20,16);
-
-INSERT IGNORE INTO ai_recommendation (id,task_id,resource_id,case_id,relevance_score,use_stage,recommendation_reason,use_suggestion,selected) VALUES
-  (1,1,4,NULL,0.9400,'IN_CLASS','与设计模式和工程实践知识点高度相关','用于课堂分组练习',1),
-  (2,1,NULL,1,0.9100,'INTRODUCTION','案例背景适合作为微服务课程导入','课前阅读并在课堂讨论',0);
+INSERT IGNORE INTO point_log (id,user_id,business_type,business_id,change_amount,balance_after,remark) VALUES
+  (1,1,'DAILY_CHECKIN',DATE_FORMAT(CURRENT_DATE,'%Y%m%d'),5,80,'每日签到奖励'),
+  (2,1,'CASE_APPROVED',4,25,100,'优秀公共案例审核通过'),
+  (3,1,'CASE_UNLOCK',2,-20,80,'解锁积分案例');
 
 INSERT IGNORE INTO resource_favorite (user_id,resource_id) VALUES (1,3);
 INSERT IGNORE INTO case_favorite (user_id,case_id) VALUES (1,1);

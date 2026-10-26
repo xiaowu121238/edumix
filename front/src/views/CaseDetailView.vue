@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, BookOpen, Calendar, GraduationCap, Heart, User } from 'lucide-vue-next'
 import { getCase, getPublishedCases, toggleCaseFavorite, unlockCase } from '../api/case'
-import { getResourceFile, getResources } from '../api/resource'
+import { getResourceFile, getResourcesByIds } from '../api/resource'
 import '../styles/case-paywall.css'
 
 const route = useRoute(),
@@ -68,7 +68,13 @@ async function load() {
   cleanup()
   try {
     item.value = (await getCase(route.params.id)).data
-    const all = (await getResources({ size: 100 })).data || []
+    const ids = [...(item.value.resourceIds || [])]
+    const content = item.value.content || ''
+    for (const match of content.matchAll(/\[\[resource:(\d+)\|/g)) ids.push(Number(match[1]))
+    const doc = new DOMParser().parseFromString(content, 'text/html')
+    for (const element of doc.querySelectorAll('[data-resource-id]'))
+      ids.push(Number(element.dataset.resourceId))
+    const all = item.value.contentUnlocked === false ? [] : (await getResourcesByIds(ids)).data
     resourceMap.value = new Map(all.map((r) => [r.id, r]))
     recommendations.value = item.value.courseId
       ? ((await getPublishedCases({ courseId: item.value.courseId, size: 100 })).data || [])
@@ -110,7 +116,7 @@ async function unlock() {
     item.value = (await unlockCase(item.value.id)).data
     await hydrateImages()
   } catch (e) {
-    alert(e?.message || '解锁失败')
+    error.value = e?.message || '解锁失败'
   } finally {
     unlocking.value = false
   }

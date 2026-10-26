@@ -59,9 +59,9 @@ public class NotificationCenterServiceImpl implements NotificationCenterService 
                 """
                 SELECT COUNT(*) FROM chat_message cm
                 JOIN chat_conversation c ON c.id=cm.conversation_id
-                LEFT JOIN chat_read_cursor rc ON rc.conversation_id=c.id AND rc.user_id=?
                 WHERE (c.user_low_id=? OR c.user_high_id=?) AND cm.sender_id<>?
-                  AND cm.id>COALESCE(rc.last_read_message_id,0)
+                  AND cm.id>COALESCE(
+                    IF(c.user_low_id=?,c.low_last_read_message_id,c.high_last_read_message_id),0)
                 """,
                 Long.class,
                 user.getUserId(),

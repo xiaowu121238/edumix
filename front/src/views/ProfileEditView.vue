@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Camera, KeyRound, Save, UserRound, X } from 'lucide-vue-next'
 import { changePassword, getCurrentUser, logout, updateProfile, uploadAvatar } from '../api/auth'
+import { notifyError } from '../services/notice'
 import '../styles/profile-home.css'
 
 const router = useRouter()
@@ -52,6 +53,7 @@ async function chooseAvatar(event) {
   if (!file) return
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
     error.value = '请上传不超过 2MB 的 JPG、PNG 或 WebP 图片'
+    notifyError(error.value, { title: '头像文件不符合要求' })
     return
   }
   uploading.value = true
@@ -71,6 +73,7 @@ async function submitPassword() {
   message.value = ''
   if (password.newPassword !== password.confirmPassword) {
     error.value = '两次输入的新密码不一致'
+    notifyError(error.value, { title: '请检查密码' })
     return
   }
   passwordSaving.value = true

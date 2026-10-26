@@ -18,6 +18,7 @@ import {
 } from 'lucide-vue-next'
 import {
   deleteResource,
+  assertResourceFile,
   getMyResources,
   getResourceCategories,
   getResourceFile,
@@ -163,7 +164,16 @@ function closeModal() {
   progress.value = 0
 }
 function chooseFile(event) {
-  form.file = event.target.files[0]
+  const file = event.target.files[0]
+  try {
+    assertResourceFile(file)
+  } catch (e) {
+    event.target.value = ''
+    form.file = null
+    showError(e)
+    return
+  }
+  form.file = file
   if (form.file && !form.resourceName) form.resourceName = form.file.name
 }
 async function save() {

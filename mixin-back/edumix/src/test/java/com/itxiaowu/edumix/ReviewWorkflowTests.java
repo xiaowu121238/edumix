@@ -68,7 +68,9 @@ class ReviewWorkflowTests {
     assertEquals(
         1,
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM resource_review WHERE resource_id=?", Integer.class, id));
+            "SELECT COUNT(*) FROM content_review WHERE target_type='RESOURCE' AND target_id=?",
+            Integer.class,
+            id));
     assertEquals(
         1,
         jdbc.queryForObject(
@@ -148,7 +150,10 @@ class ReviewWorkflowTests {
       resources.review(id, new ResourceReviewRequest("REJECTED", "请替换文件"), reviewer);
       var replacement =
           new MockMultipartFile(
-              "file", "revised.pdf", "application/pdf", "new pdf content".getBytes());
+              "file",
+              "revised.pdf",
+              "application/pdf",
+              "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF".getBytes());
       var submitted = resources.update(id, metadata, replacement, author);
       assertEquals("PENDING", submitted.auditStatus());
       assertEquals((long) replacement.getSize(), submitted.fileSize());
@@ -192,7 +197,10 @@ class ReviewWorkflowTests {
             .anyMatch(item -> item.id().equals(id)));
     assertEquals(
         1,
-        jdbc.queryForObject("SELECT COUNT(*) FROM case_review WHERE case_id=?", Integer.class, id));
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM content_review WHERE target_type='CASE' AND target_id=?",
+            Integer.class,
+            id));
     assertEquals(
         1,
         jdbc.queryForObject(

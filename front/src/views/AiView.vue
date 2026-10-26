@@ -1,4 +1,5 @@
 <script setup>
+import { collectPages } from '../api/pagination'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
@@ -161,8 +162,8 @@ function changeContextTab(value) {
 }
 async function refreshMaterials() {
   const [resourceResult, caseResult, publicResourceResult, publicCaseResult] = await Promise.all([
-    getResources({ favoriteOnly: true, size: 100 }),
-    getCases({ favoriteOnly: true, size: 100 }),
+    collectPages(getResources, { favoriteOnly: true }),
+    collectPages(getCases, { favoriteOnly: true }),
     getResources({ size: 100 }),
     getPublishedCases({ size: 100 }),
   ])

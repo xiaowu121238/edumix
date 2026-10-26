@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS sys_user (
     college VARCHAR(100),
     title VARCHAR(50),
     status TINYINT NOT NULL DEFAULT 1 COMMENT '0 disabled, 1 enabled',
+    token_version INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'JWT logout version',
     last_login_time DATETIME,
     deleted TINYINT NOT NULL DEFAULT 0,
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -63,16 +64,6 @@ CREATE TABLE IF NOT EXISTS course (
     KEY idx_course_name (course_name),
     CONSTRAINT fk_course_owner FOREIGN KEY (owner_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Courses';
-
-CREATE TABLE IF NOT EXISTS course_teacher (
-    course_id BIGINT UNSIGNED NOT NULL,
-    teacher_id BIGINT UNSIGNED NOT NULL,
-    member_role VARCHAR(30) NOT NULL DEFAULT 'COLLABORATOR',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (course_id, teacher_id),
-    CONSTRAINT fk_course_teacher_course FOREIGN KEY (course_id) REFERENCES course(id),
-    CONSTRAINT fk_course_teacher_user FOREIGN KEY (teacher_id) REFERENCES sys_user(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Course collaborators';
 
 CREATE TABLE IF NOT EXISTS course_chapter (
     id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -193,25 +184,6 @@ CREATE TABLE IF NOT EXISTS case_knowledge_point (
     CONSTRAINT fk_ckp_case FOREIGN KEY (case_id) REFERENCES teaching_case(id),
     CONSTRAINT fk_ckp_point FOREIGN KEY (knowledge_point_id) REFERENCES knowledge_point(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Case knowledge point mappings';
-
-CREATE TABLE IF NOT EXISTS ai_generation_task (
-    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    task_no VARCHAR(50) NOT NULL,
-    user_id BIGINT UNSIGNED NOT NULL,
-    course_id BIGINT UNSIGNED,
-    task_type VARCHAR(30) NOT NULL COMMENT 'RESOURCE_MATCH CASE_DRAFT KNOWLEDGE_EXTRACT',
-    input_json JSON,
-    result_json JSON,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING RUNNING SUCCESS FAILED',
-    error_message VARCHAR(1000),
-    started_time DATETIME,
-    finished_time DATETIME,
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_ai_task_no (task_no),
-    KEY idx_ai_user_status (user_id, status),
-    CONSTRAINT fk_ai_user FOREIGN KEY (user_id) REFERENCES sys_user(id),
-    CONSTRAINT fk_ai_course FOREIGN KEY (course_id) REFERENCES course(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI generation tasks';
 
 CREATE TABLE IF NOT EXISTS message (
     id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,

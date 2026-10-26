@@ -19,12 +19,15 @@ import org.springframework.stereotype.Service;
 public class JwtService {
   private final SecretKey key;
   private final long expirationSeconds;
+  private final TokenBlacklist tokenBlacklist;
 
   public JwtService(
       @Value("${edumix.jwt.secret}") String secret,
-      @Value("${edumix.jwt.expiration-seconds}") long expirationSeconds) {
+      @Value("${edumix.jwt.expiration-seconds}") long expirationSeconds,
+      TokenBlacklist tokenBlacklist) {
     this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
     this.expirationSeconds = expirationSeconds;
+    this.tokenBlacklist = tokenBlacklist;
   }
 
   public String generate(UserPrincipal principal) {
@@ -35,6 +38,7 @@ public class JwtService {
         .claim("uid", principal.getUserId())
         .claim("roles", principal.roles())
         .claim("pv", passwordVersion(principal.getPassword()))
+        .claim("tv", tokenBlacklist.currentVersion(principal.getUserId()))
         .issuedAt(Date.from(now))
         .expiration(Date.from(now.plusSeconds(expirationSeconds)))
         .signWith(key)

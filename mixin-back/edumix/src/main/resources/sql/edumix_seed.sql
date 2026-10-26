@@ -21,8 +21,6 @@ INSERT INTO course (id, course_code, course_name, description, college, semester
   (3, 'JAVA-CONC-2026', 'Java并发编程深度解析', 'Java并发模型、线程安全和性能优化', '计算机学院', '2026-2027-1', 1, 1)
 ON DUPLICATE KEY UPDATE course_name = VALUES(course_name), description = VALUES(description), semester = VALUES(semester);
 
-INSERT IGNORE INTO course_teacher (course_id, teacher_id, member_role) VALUES (1,1,'OWNER'),(2,1,'OWNER'),(2,2,'COLLABORATOR'),(3,1,'OWNER');
-
 INSERT INTO course_chapter (id, course_id, chapter_name, chapter_no, sort_order) VALUES
   (1,1,'第一章 面向对象程序设计基础','1',1),
   (2,1,'第二章 Java 集合框架','2',2),
@@ -61,10 +59,6 @@ INSERT INTO teaching_case (id, case_no, case_name, summary, content, subject, cr
 ON DUPLICATE KEY UPDATE case_name = VALUES(case_name), summary = VALUES(summary), excellent = VALUES(excellent);
 
 INSERT IGNORE INTO case_knowledge_point (case_id, knowledge_point_id) VALUES (3,7),(4,8);
-
-INSERT INTO ai_generation_task (id, task_no, user_id, course_id, task_type, input_json, result_json, status, started_time, finished_time) VALUES
-  (1,'AI-2026-001',1,2,'RESOURCE_MATCH',JSON_OBJECT('keywords',JSON_ARRAY('Spring Boot','微服务')),JSON_OBJECT('matchedCount',12),'SUCCESS',NOW() - INTERVAL 5 MINUTE,NOW() - INTERVAL 4 MINUTE)
-ON DUPLICATE KEY UPDATE status = VALUES(status), result_json = VALUES(result_json);
 
 INSERT INTO message (id, message_type, title, content, sender_id, business_type, business_id, create_time) VALUES
   (1,'SYSTEM','V2.0 版本更新通知：AI 教学助手全新上线','平台已完成升级，新增公共资源推荐、教学案例整合和智能知识点提取等功能。',3,NULL,NULL,NOW() - INTERVAL 10 MINUTE),

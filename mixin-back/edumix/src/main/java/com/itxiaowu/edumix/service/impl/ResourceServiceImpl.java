@@ -42,7 +42,7 @@ public class ResourceServiceImpl implements ResourceService {
   private final ResourceCategoryMapper categoryMapper;
   private final ResourceFavoriteMapper favoriteMapper;
   private final ResourceCorrectionMapper correctionMapper;
-  private final ResourceReviewMapper reviewMapper;
+  private final ContentReviewMapper reviewMapper;
   private final SysUserMapper userMapper;
   private final AuditNotificationService notifications;
   private final CorrectionNotificationService correctionNotifications;
@@ -137,6 +137,7 @@ public class ResourceServiceImpl implements ResourceService {
     String original = Optional.ofNullable(file.getOriginalFilename()).orElse("file");
     String extension = extension(original);
     String type = resourceType(extension);
+    com.itxiaowu.edumix.service.ResourceFileValidator.validate(file, extension);
     String scope = normalizeVisibility(visibility);
     requireCategory(categoryId);
     String month = LocalDate.now().toString().substring(0, 7);
@@ -202,6 +203,7 @@ public class ResourceServiceImpl implements ResourceService {
       String original = Optional.ofNullable(file.getOriginalFilename()).orElse("");
       String ext = extension(original);
       replacementType = resourceType(ext);
+      com.itxiaowu.edumix.service.ResourceFileValidator.validate(file, ext);
       String month = LocalDate.now().toString().substring(0, 7);
       replacementUrl = month + "/" + UUID.randomUUID().toString().replace("-", "") + "." + ext;
       replacement = root.resolve(replacementUrl).normalize();
@@ -274,9 +276,10 @@ public class ResourceServiceImpl implements ResourceService {
         && !user.roles().contains("ADMIN")) throw new AccessDeniedException("无权查看该资源的审核记录");
     return reviewMapper
         .selectList(
-            Wrappers.<ResourceReview>lambdaQuery()
-                .eq(ResourceReview::getResourceId, id)
-                .orderByDesc(ResourceReview::getSubmissionNo))
+            Wrappers.<ContentReview>lambdaQuery()
+                .eq(ContentReview::getTargetType, "RESOURCE")
+                .eq(ContentReview::getTargetId, id)
+                .orderByDesc(ContentReview::getSubmissionNo))
         .stream()
         .map(
             review -> {
@@ -307,10 +310,13 @@ public class ResourceServiceImpl implements ResourceService {
     int submission =
         Math.toIntExact(
                 reviewMapper.selectCount(
-                    Wrappers.<ResourceReview>lambdaQuery().eq(ResourceReview::getResourceId, id)))
+                    Wrappers.<ContentReview>lambdaQuery()
+                        .eq(ContentReview::getTargetType, "RESOURCE")
+                        .eq(ContentReview::getTargetId, id)))
             + 1;
-    ResourceReview record = new ResourceReview();
-    record.setResourceId(id);
+    ContentReview record = new ContentReview();
+    record.setTargetType("RESOURCE");
+    record.setTargetId(id);
     record.setReviewerId(reviewer.getUserId());
     record.setSubmissionNo(submission);
     record.setReviewResult(request.result());
@@ -455,6 +461,37 @@ public class ResourceServiceImpl implements ResourceService {
         new FileSystemResource(path), contentType, entity.getResourceName(), download);
   }
 
+  @Override
+  public Map<String, Long> mineStats(UserPrincipal user) {
+    long total =
+        resourceMapper.selectCount(
+            Wrappers.<TeachingResource>lambdaQuery()
+                .eq(TeachingResource::getUploaderId, user.getUserId()));
+    long approved =
+        resourceMapper.selectCount(
+            Wrappers.<TeachingResource>lambdaQuery()
+                .eq(TeachingResource::getUploaderId, user.getUserId())
+                .eq(TeachingResource::getVisibility, "PUBLIC")
+                .eq(TeachingResource::getAuditStatus, "APPROVED"));
+    return Map.of("total", total, "approved", approved);
+  }
+
+  @Override
+  public List<ResourceResponse> byIds(List<Long> ids, UserPrincipal user) {
+    if (ids == null || ids.size() > 100) throw new IllegalArgumentException("每次最多查询100个资源");
+    List<Long> unique = ids.stream().filter(Objects::nonNull).distinct().toList();
+    if (unique.isEmpty()) return List.of();
+    List<TeachingResource> readable =
+        resourceMapper
+            .selectList(
+                Wrappers.<TeachingResource>lambdaQuery().in(TeachingResource::getId, unique))
+            .stream()
+            .filter(r -> canRead(r, user))
+            .toList();
+    Set<Long> favorites = favoriteIds(readable, user.getUserId());
+    return readable.stream().map(r -> response(r, favorites.contains(r.getId()))).toList();
+  }
+
   private TeachingResource requireReadable(Long id, UserPrincipal user) {
     TeachingResource entity = resourceMapper.selectById(id);
     if (entity == null) throw new IllegalArgumentException("资源不存在");
@@ -567,11 +604,12 @@ public class ResourceServiceImpl implements ResourceService {
     ResourceCategory category =
         r.getCategoryId() == null ? null : categoryMapper.selectById(r.getCategoryId());
     boolean previewable = Set.of("IMAGE", "PDF", "VIDEO").contains(r.getResourceType());
-    ResourceReview last =
+    ContentReview last =
         reviewMapper.selectOne(
-            Wrappers.<ResourceReview>lambdaQuery()
-                .eq(ResourceReview::getResourceId, r.getId())
-                .orderByDesc(ResourceReview::getSubmissionNo)
+            Wrappers.<ContentReview>lambdaQuery()
+                .eq(ContentReview::getTargetType, "RESOURCE")
+                .eq(ContentReview::getTargetId, r.getId())
+                .orderByDesc(ContentReview::getSubmissionNo)
                 .last("LIMIT 1"));
     return new ResourceResponse(
         r.getId(),

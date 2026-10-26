@@ -5,7 +5,7 @@ import { ArrowLeft, CheckCircle2, ChevronDown, FileText, Hash, Save, Send, Setti
 import CaseRichEditor from '../components/CaseRichEditor.vue'
 import { createCaseDraft, getCase, submitCase, updateCaseDraft } from '../api/case'
 import { getCourses, getCourseTree } from '../api/course'
-import { getResources } from '../api/resource'
+import { getResourcesByIds } from '../api/resource'
 
 const route = useRoute(),
   router = useRouter(),
@@ -155,7 +155,6 @@ async function persist(submitAfter = false, automatic = false) {
 onMounted(async () => {
   try {
     courses.value = (await getCourses()).data || []
-    resources.value = (await getResources({ size: 100 })).data || []
     if (editing.value) {
       const item = (await getCase(route.params.id)).data
       if (
@@ -201,7 +200,7 @@ onMounted(async () => {
         form.caseName = draft.title || ''
         form.summary = draft.summary || ''
         form.content = draft.content || ''
-        form.resourceIds = (draft.resourceIds || []).filter((id) => resources.value.some((r) => r.id === id))
+        form.resourceIds = draft.resourceIds || []
         notice.value = '已载入 AI 草稿，保存后进入我的案例'
       }
     }
@@ -221,6 +220,11 @@ onMounted(async () => {
     }
     lastSaved =
       editing.value && !restored && !legacyPrivate ? snapshot() : backup && !restored ? snapshot() : ''
+    const ids = [...form.resourceIds]
+    for (const match of form.content.matchAll(/\[\[resource:(\d+)\|/g)) ids.push(Number(match[1]))
+    const body = new DOMParser().parseFromString(form.content, 'text/html')
+    for (const node of body.querySelectorAll('[data-resource-id]')) ids.push(Number(node.dataset.resourceId))
+    resources.value = (await getResourcesByIds(ids)).data
     initialized = true
     saveState.value = editing.value && !restored && !legacyPrivate ? '已保存到草稿箱' : '待保存'
   } catch (e) {

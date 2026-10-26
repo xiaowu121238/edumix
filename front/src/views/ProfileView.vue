@@ -3,13 +3,14 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight, BookOpen, Coins, FileText, Pencil, UserRound } from 'lucide-vue-next'
 import { getCurrentUser } from '../api/auth'
-import { getMyResources } from '../api/resource'
+import { getMyResources, getMyResourceStats } from '../api/resource'
 import { getMyCases } from '../api/case'
 import '../styles/profile-home.css'
 
 const router = useRouter()
 const profile = ref(null)
 const resources = ref([])
+const resourceStats = ref({ total: 0, approved: 0 })
 const cases = ref([])
 const loading = ref(true)
 const error = ref('')
@@ -17,7 +18,7 @@ const tab = ref('resources')
 const roleNames = { TEACHER: '教师', RESOURCE_MANAGER: '资源负责人', ADMIN: '管理员' }
 const approvedCount = computed(
   () =>
-    resources.value.filter((item) => item.auditStatus === 'APPROVED' && item.visibility === 'PUBLIC').length +
+    resourceStats.value.approved +
     cases.value.filter((item) => item.auditStatus === 'APPROVED' && item.visibility === 'PUBLIC').length,
 )
 const creatorLevel = computed(() => (approvedCount.value >= 10 ? 3 : approvedCount.value >= 3 ? 2 : 1))
@@ -44,7 +45,12 @@ function openCase(item) {
 async function load() {
   loading.value = true
   error.value = ''
-  const results = await Promise.allSettled([getCurrentUser(), getMyResources({ size: 100 }), getMyCases()])
+  const results = await Promise.allSettled([
+    getCurrentUser(),
+    getMyResources({ size: 6 }),
+    getMyCases(),
+    getMyResourceStats(),
+  ])
   if (results[0].status === 'fulfilled') {
     profile.value = results[0].value.data
     localStorage.setItem('edumix-user', JSON.stringify(profile.value))
@@ -54,6 +60,8 @@ async function load() {
   else error.value = [error.value, '资源列表加载失败'].filter(Boolean).join('；')
   if (results[2].status === 'fulfilled') cases.value = results[2].value.data || []
   else error.value = [error.value, '案例列表加载失败'].filter(Boolean).join('；')
+  if (results[3].status === 'fulfilled') resourceStats.value = results[3].value.data
+  else error.value = [error.value, '资源统计加载失败'].filter(Boolean).join('；')
   loading.value = false
 }
 onMounted(load)
@@ -94,7 +102,7 @@ onMounted(load)
         <div class="panel personal-stat">
           <span class="personal-stat-icon blue"><FileText :size="22" /></span>
           <div>
-            <small>上传资源</small><strong>{{ resources.length }}</strong>
+            <small>上传资源</small><strong>{{ resourceStats.total }}</strong>
           </div>
         </div>
         <div class="panel personal-stat">
@@ -143,7 +151,7 @@ onMounted(load)
         </div>
         <div class="personal-tabs">
           <button :class="{ active: tab === 'resources' }" @click="tab = 'resources'">
-            上传的资源 <span>{{ resources.length }}</span></button
+            上传的资源 <span>{{ resourceStats.total }}</span></button
           ><button :class="{ active: tab === 'cases' }" @click="tab = 'cases'">
             创作的案例 <span>{{ cases.length }}</span>
           </button>

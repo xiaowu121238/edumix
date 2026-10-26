@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,10 +39,12 @@ public class PointServiceImpl implements PointService {
         ((Number) row.get("total_income")).intValue(),
         ((Number) row.get("total_expense")).intValue(),
         jdbc.queryForObject(
-                "SELECT COUNT(*) FROM daily_checkin WHERE user_id=? AND checkin_date=?",
+                "SELECT COUNT(*) FROM point_log WHERE user_id=? AND business_type='DAILY_CHECKIN' AND business_id=? AND deleted=0",
                 Integer.class,
                 userId,
-                LocalDate.now(ZoneId.of("Asia/Shanghai")))
+                Long.parseLong(
+                    LocalDate.now(ZoneId.of("Asia/Shanghai"))
+                        .format(DateTimeFormatter.BASIC_ISO_DATE)))
             > 0);
   }
 
@@ -70,33 +73,33 @@ public class PointServiceImpl implements PointService {
     YearMonth selected = YearMonth.of(year, month);
     return jdbc.query(
         """
-            SELECT checkin_date FROM daily_checkin
-            WHERE user_id=? AND deleted=0 AND checkin_date>=? AND checkin_date<?
-            ORDER BY checkin_date
+            SELECT STR_TO_DATE(CAST(business_id AS CHAR), '%Y%m%d') AS checkin_date
+            FROM point_log
+            WHERE user_id=? AND deleted=0 AND business_type='DAILY_CHECKIN'
+              AND business_id>=? AND business_id<?
+            ORDER BY business_id
             """,
         (rs, n) -> rs.getDate("checkin_date").toLocalDate(),
         userId,
-        selected.atDay(1),
-        selected.plusMonths(1).atDay(1));
+        Long.parseLong(selected.atDay(1).format(DateTimeFormatter.BASIC_ISO_DATE)),
+        Long.parseLong(selected.plusMonths(1).atDay(1).format(DateTimeFormatter.BASIC_ISO_DATE)));
   }
 
   @Transactional
   @Override
   public Wallet checkIn(Long userId) {
-    // 日期以数据库服务器当天为准，并依靠唯一键保证并发请求也只能签到一次。
+    // 签到事实直接记录在积分流水中，唯一键保证同一用户同一天只能奖励一次。
     LocalDate today = LocalDate.now(ZoneId.of("Asia/Shanghai"));
-    int inserted =
-        jdbc.update(
-            "INSERT IGNORE INTO daily_checkin(user_id,checkin_date,reward_points) VALUES(?,?,5)",
+    long businessId = Long.parseLong(today.format(DateTimeFormatter.BASIC_ISO_DATE));
+    ensureAccount(userId);
+    lockedBalance(userId);
+    if (jdbc.queryForObject(
+            "SELECT COUNT(*) FROM point_log WHERE user_id=? AND business_type='DAILY_CHECKIN' AND business_id=? AND deleted=0",
+            Integer.class,
             userId,
-            today);
-    if (inserted == 0) throw new IllegalArgumentException("今天已经签到过了");
-    credit(
-        userId,
-        5,
-        "DAILY_CHECKIN",
-        Long.parseLong(today.format(DateTimeFormatter.BASIC_ISO_DATE)),
-        "每日签到奖励");
+            businessId)
+        > 0) throw new IllegalArgumentException("今天已经签到过了");
+    creditLocked(userId, 5, "DAILY_CHECKIN", businessId, "每日签到奖励");
     return wallet(userId);
   }
 
@@ -131,19 +134,12 @@ public class PointServiceImpl implements PointService {
     // 扣除买方积分、增加作者积分和记录解锁关系必须在同一事务中完成。
     if (price < 1) throw new IllegalArgumentException("案例积分价格不正确");
     if (buyerId.equals(authorId)) throw new IllegalArgumentException("作者无需解锁自己的案例");
-    int inserted =
-        jdbc.update(
-            "INSERT IGNORE INTO case_unlock(user_id,case_id,cost_points,author_income) VALUES(?,?,?,?)",
-            buyerId,
-            caseId,
-            price,
-            price);
-    if (inserted == 0) return false;
     ensureAccount(buyerId);
     ensureAccount(authorId);
     long first = Math.min(buyerId, authorId), second = Math.max(buyerId, authorId);
     lockedBalance(first);
     lockedBalance(second);
+    if (unlocked(buyerId, caseId)) return false;
     debitLocked(buyerId, price, "CASE_UNLOCK_SPEND", caseId, "解锁积分案例");
     creditLocked(authorId, price, "CASE_UNLOCK_INCOME", caseId, "案例被解锁获得积分");
     return true;
@@ -152,7 +148,7 @@ public class PointServiceImpl implements PointService {
   @Override
   public boolean unlocked(Long userId, Long caseId) {
     return jdbc.queryForObject(
-            "SELECT COUNT(*) FROM case_unlock WHERE user_id=? AND case_id=?",
+            "SELECT COUNT(*) FROM point_log WHERE user_id=? AND business_id=? AND business_type IN ('CASE_UNLOCK','CASE_UNLOCK_SPEND') AND deleted=0",
             Integer.class,
             userId,
             caseId)
@@ -177,14 +173,14 @@ public class PointServiceImpl implements PointService {
       throw new IllegalArgumentException("管理员密码不正确");
     if (recipient == null || !Integer.valueOf(1).equals(recipient.getStatus()))
       throw new IllegalArgumentException("接收账号不存在或已停用");
+    // 管理员、接收者、原因和金额全部保存在积分流水中，无需单独维护重复的发放表。
+    long grantId = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
+    credit(recipientId, amount, "ADMIN_GRANT", grantId, "管理员发放：" + reason.trim());
     jdbc.update(
-        "INSERT INTO point_grant(operator_id,recipient_id,amount,reason) VALUES(?,?,?,?)",
+        "UPDATE point_log SET operator_id=? WHERE user_id=? AND business_type='ADMIN_GRANT' AND business_id=?",
         operatorId,
         recipientId,
-        amount,
-        reason.trim());
-    Long grantId = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
-    credit(recipientId, amount, "ADMIN_GRANT", grantId, "管理员发放：" + reason.trim());
+        grantId);
     return wallet(recipientId);
   }
 

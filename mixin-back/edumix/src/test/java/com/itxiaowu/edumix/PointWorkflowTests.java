@@ -75,7 +75,7 @@ class PointWorkflowTests {
     assertEquals(
         1,
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM case_unlock WHERE user_id=? AND case_id=?",
+            "SELECT COUNT(*) FROM point_log WHERE user_id=? AND business_type='CASE_UNLOCK_SPEND' AND business_id=?",
             Integer.class,
             buyer.getUserId(),
             paid));
@@ -110,7 +110,7 @@ class PointWorkflowTests {
     assertEquals(
         1,
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM point_grant WHERE operator_id=? AND recipient_id=?",
+            "SELECT COUNT(*) FROM point_log WHERE operator_id=? AND user_id=? AND business_type='ADMIN_GRANT'",
             Integer.class,
             admin.getUserId(),
             buyer.getUserId()));

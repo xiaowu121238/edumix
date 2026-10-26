@@ -53,7 +53,7 @@ public class AuthController {
   public ApiResponse<Void> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
     String token = authorization.substring(7);
     Claims claims = jwtService.parse(token);
-    tokenBlacklist.revoke(claims.getId(), claims.getExpiration().toInstant());
+    tokenBlacklist.revoke(claims.get("uid", Long.class));
     return ApiResponse.success();
   }
 

@@ -12,6 +12,10 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ResourceService {
   List<ResourceCategory> categories();
 
+  java.util.Map<String, Long> mineStats(UserPrincipal user);
+
+  List<ResourceResponse> byIds(List<Long> ids, UserPrincipal user);
+
   List<ResourceResponse> list(
       String keyword, String type, Long categoryId, Boolean favoriteOnly, UserPrincipal user);
 

@@ -44,7 +44,7 @@ const dateKey = (day) =>
   `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 async function refreshWallet() {
   try {
-    wallet.value = (await getWallet()).data
+    wallet.value = (await getWallet({ skipErrorNotice: true })).data
   } catch {}
 }
 async function loadDates() {

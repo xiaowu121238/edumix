@@ -35,7 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     try {
       String token = authorization.substring(7);
       Claims claims = jwtService.parse(token);
-      if (!tokenBlacklist.isRevoked(claims.getId())
+      if (!tokenBlacklist.isRevoked(
+              claims.get("uid", Long.class), claims.get("tv", Integer.class))
           && SecurityContextHolder.getContext().getAuthentication() == null) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
         if (!jwtService

@@ -12,7 +12,7 @@ import lombok.Data;
 public class PointLog {
   @TableId private Long id;
   private Long userId;
-  private Long ruleId;
+  private Long operatorId;
   private String businessType;
   private Long businessId;
   private Integer changeAmount;

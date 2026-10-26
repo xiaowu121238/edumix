@@ -53,11 +53,12 @@ public class ChatServiceImpl implements ChatService {
                    m.content AS last_content, c.last_message_at,
                    (SELECT COUNT(*) FROM chat_message unread
                     WHERE unread.conversation_id=c.id AND unread.sender_id<>?
-                      AND unread.id>COALESCE(rc.last_read_message_id,0)) AS unread_count
+                      AND unread.id>COALESCE(
+                        IF(c.user_low_id=?,c.low_last_read_message_id,c.high_last_read_message_id),0)
+                   ) AS unread_count
             FROM chat_conversation c
             JOIN sys_user u ON u.id=IF(c.user_low_id=?,c.user_high_id,c.user_low_id) AND u.deleted=0
             LEFT JOIN chat_message m ON m.id=c.last_message_id
-            LEFT JOIN chat_read_cursor rc ON rc.conversation_id=c.id AND rc.user_id=?
             WHERE (c.user_low_id=? OR c.user_high_id=?)
             ORDER BY c.last_message_at DESC,c.id DESC
             """,
@@ -159,12 +160,16 @@ public class ChatServiceImpl implements ChatService {
     if (latest == null) return;
     jdbc.update(
         """
-            INSERT INTO chat_read_cursor(conversation_id,user_id,last_read_message_id) VALUES(?,?,?)
-            ON DUPLICATE KEY UPDATE last_read_message_id=GREATEST(COALESCE(last_read_message_id,0),VALUES(last_read_message_id))
+            UPDATE chat_conversation
+            SET low_last_read_message_id=IF(user_low_id=?,GREATEST(COALESCE(low_last_read_message_id,0),?),low_last_read_message_id),
+                high_last_read_message_id=IF(user_high_id=?,GREATEST(COALESCE(high_last_read_message_id,0),?),high_last_read_message_id)
+            WHERE id=?
             """,
-        conversationId,
         me.getUserId(),
-        latest);
+        latest,
+        me.getUserId(),
+        latest,
+        conversationId);
   }
 
   private long requireMember(Long conversationId, Long userId) {

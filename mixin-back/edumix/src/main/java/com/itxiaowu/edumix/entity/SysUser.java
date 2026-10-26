@@ -24,6 +24,7 @@ public class SysUser {
   private String college;
   private String title;
   private Integer status;
+  private Integer tokenVersion;
   private LocalDateTime lastLoginTime;
   @TableLogic private Integer deleted;
   private LocalDateTime createTime;

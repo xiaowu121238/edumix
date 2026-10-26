@@ -2,6 +2,8 @@
 import { nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
   Bold,
+  FileText,
+  Plus,
   Code2,
   Heading1,
   Image,
@@ -19,7 +21,15 @@ import {
   Video,
   X,
 } from 'lucide-vue-next'
-import { getResourceCategories, getResourceFile, uploadResource } from '../api/resource'
+import {
+  assertResourceFile,
+  getResourceCategories,
+  getResourceFile,
+  uploadResource,
+  getResources,
+} from '../api/resource'
+
+import PaginationBar from './PaginationBar.vue'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -149,7 +159,16 @@ async function hydrateImages() {
   }
 }
 function chooseFile(e) {
-  uploadForm.file = e.target.files[0]
+  const file = e.target.files[0]
+  try {
+    assertResourceFile(file)
+  } catch (error) {
+    e.target.value = ''
+    uploadForm.file = null
+    resourceError.value = error.message
+    return
+  }
+  uploadForm.file = file
   if (uploadForm.file && !uploadForm.resourceName) uploadForm.resourceName = uploadForm.file.name
 }
 async function doUpload() {
@@ -170,6 +189,8 @@ async function doUpload() {
     localResources.value.unshift(res)
     emit('resource-created', res)
     await insertResource(res)
+  } catch (e) {
+    resourceError.value = e?.message || '资源上传失败'
   } finally {
     uploading.value = false
   }
@@ -192,12 +213,52 @@ watch(
   },
   { immediate: true },
 )
-const visible = () =>
-  localResources.value.filter(
-    (r) =>
-      (bindingMode.value === 'ALL' || r.resourceType === bindingMode.value) &&
-      (!search.value || r.resourceName.toLowerCase().includes(search.value.toLowerCase())),
-  )
+const available = ref([]),
+  resourcePage = ref(1),
+  resourceTotal = ref(0),
+  resourceLoading = ref(false),
+  resourceError = ref('')
+let searchTimer,
+  queryId = 0
+async function loadResources(page = 1) {
+  const id = ++queryId
+  resourceLoading.value = true
+  resourceError.value = ''
+  try {
+    const result = await getResources({
+      page,
+      size: 12,
+      keyword: search.value,
+      type: bindingMode.value === 'ALL' ? undefined : bindingMode.value,
+    })
+    if (id !== queryId) return
+    available.value = result.data || []
+    resourcePage.value = page
+    resourceTotal.value = result.page?.total ?? available.value.length
+  } catch (e) {
+    if (id === queryId) {
+      available.value = []
+      resourceTotal.value = 0
+      resourceError.value = e?.message || '资源加载失败'
+    }
+  } finally {
+    if (id === queryId) resourceLoading.value = false
+  }
+}
+watch([dialog, tab, bindingMode], () => {
+  if (dialog.value && tab.value === 'existing') loadResources()
+})
+watch(search, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    if (dialog.value) loadResources()
+  }, 250)
+})
+onBeforeUnmount(() => {
+  ++queryId
+  clearTimeout(searchTimer)
+})
+const visible = () => available.value
 const acceptFiles = () =>
   bindingMode.value === 'IMAGE'
     ? '.jpg,.jpeg,.png,.gif,.webp'
@@ -304,7 +365,9 @@ onBeforeUnmount(() => blobUrls.forEach(URL.revokeObjectURL))
             v-model="search"
             :placeholder="`搜索已有${bindingMode === 'IMAGE' ? '图片' : bindingMode === 'VIDEO' ? '视频' : '资源'}`"
         /></label>
-        <div>
+        <p v-if="resourceError" class="form-error">{{ resourceError }}</p>
+        <p v-if="resourceLoading">正在加载资源...</p>
+        <div v-else>
           <button v-for="r in visible()" :key="r.id" type="button" @click="insertResource(r)">
             <component
               :is="r.resourceType === 'IMAGE' ? Image : r.resourceType === 'VIDEO' ? Video : FileText"
@@ -315,6 +378,13 @@ onBeforeUnmount(() => blobUrls.forEach(URL.revokeObjectURL))
           </button>
           <p v-if="!visible().length">没有找到可用资源</p>
         </div>
+        <PaginationBar
+          v-if="!resourceLoading"
+          :page="resourcePage"
+          :pages="Math.ceil(resourceTotal / 12)"
+          :total="resourceTotal"
+          @change="loadResources"
+        />
       </div>
     </section>
   </div>
